@@ -1,0 +1,93 @@
+.ListPage-container {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-image: url("../../images/背景垫图.png");
+    background-attachment: scroll;
+    overflow-y: scroll ;
+    background-repeat: repeat;
+    background-color: #FFBB8E;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+
+}
+#addListTask{
+    width: 30px;
+    height: 30px;
+    background-image: url("../../images/AddIcon.svg");
+    position:absolute;
+    top: 2%;
+    right:5%;
+}
+.show-Date{
+    position:absolute;
+    top: 2%;
+    left: 5%;
+    color:#765e27;
+    font-size: 19px;
+}
+
+#task-list-container{
+    position:absolute;
+    top:10%;
+}
+.task-list{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 80vw;
+   
+}
+.task{
+    width: 80vw;
+    border-radius: 31px;
+    border: 6px solid #FFF;
+    background: #FFF0CE;
+    box-shadow: 0px 0px 7.8px 0px rgba(179, 72, 0, 0.21);
+    margin:5px;
+    padding-left: 10px;
+    position: relative;
+}
+
+.limited-time, .cycle-time{
+    background-color:#FFBB8E;
+    width: 100vw;;
+    width: 56px;
+    height: 22px;
+    border-radius:20px ;
+    font-size: 10px;
+}
+.taskListName{
+    font-size: 25px;
+    font-weight: 700;
+    margin:3px 0px;
+}
+.task-description{
+    margin-top: 2px;
+}
+.finishTask{
+    background-image: url("../../images/tick.svg");
+    position: absolute;
+    top:3%;
+    right:1%;
+    width: 10px;
+    height: 10px;
+}
+.deleteTask{
+    background-image: url("../../images/delete.svg");
+    position: absolute;
+    top:24%;
+    right:1%;
+    width: 10px;
+    height: 21px;
+}
+.blur{
+    filter:blur(5px);
+}
+
+p{
+    white-space: pre-wrap;
+    word-break: break-all;
+}

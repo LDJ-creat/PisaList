@@ -1,0 +1,51 @@
+.bottom-nav{
+    width: 80vw;
+    height: 5vw;
+    border-radius: 31px;
+    border: 6px solid #FFF;
+    box-shadow: 0px 0px 7.8px 0px rgba(179, 72, 0, 0.21);
+    position:fixed;
+    bottom:3%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display:flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+}
+
+button{
+    border:none;
+    outline: none;
+    cursor: pointer;
+    transform: transition all 0.3s ease;
+    -moz-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent;
+}
+button:focus {
+    outline: 2px solid transparent;
+}
+button:hover{
+    transform: scale(1.1);
+}
+.Bgi{
+    background-repeat: no-repeat;
+    background-color: transparent;
+    background-size: contain;
+}
+#ListIcon{
+    width: 60px;
+    height: 60px;
+    background-image: url("../../images/ListIcon.png");
+}
+#ChartIcon{
+    width: 140px;
+    height: 140px;
+    background-image: url("../../images/ChartIcon.svg");
+}
+#WishIcon{
+    width: 70px;
+    height: 70px;
+    background-image: url("../../images/WishIcon.svg");
+}

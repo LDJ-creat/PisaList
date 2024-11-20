@@ -1,0 +1,19 @@
+
+.Start-img{
+   width:100vw;
+   height:100vh;
+   object-fit: contain;
+   animation: fadeInOut 3s forwards; /* 持续时间为 2 秒，forwards 保持动画的最后状态 */
+}
+@keyframes fadeInOut {
+   0% {
+      opacity: 0.3;
+   }
+   50% {
+      opacity: 1;
+   }
+   100% {
+      opacity: 0.2;
+   }
+}
+

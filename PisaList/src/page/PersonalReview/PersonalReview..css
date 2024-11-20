@@ -1,0 +1,61 @@
+.personal-review-container {
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-image: url("../../images/背景垫图.png");
+    background-attachment: scroll;
+    overflow-y: scroll ;
+    background-repeat: repeat;
+    background-color: #FFBB8E;
+    width: 100vw;
+    height: 100vh;
+}
+
+.personal-review{
+    width: 70vw;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.personal-review-item{
+    border-left:2px solid #9c6b618e;
+    position: relative;
+    margin:0px 0px;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-left: 20px ;
+    width: 40vw;
+}
+.personal-review-node{
+    background-color:#f56c10 ;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    position: absolute;
+    top:3%;
+    left: -1%;
+}
+.personal-review-item-date{
+    font-size: 14px;
+    font-weight: 700;
+}
+.personal-review-item-event{
+    font-size: 25px;
+    font-weight: 700;
+}
+.personal-review-item-description{
+    color: grey;
+}
+
+.personal-review-item-date,.personal-review-item-event{
+    margin-top:4px;
+    margin-bottom:4px ;
+}
+.personal-review-item-description{
+    margin-top:4px;
+    margin-bottom: 23px;
+}

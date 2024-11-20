@@ -1,0 +1,37 @@
+.Setting{
+    width: 250px;
+    height: 70px;
+    display:flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    position:absolute;
+    top: 5%;
+    left: 60%;
+    z-index: 100;
+
+}
+
+.Setting-Icon{
+    width: 75px;
+    height: 20px;
+    background-image: url("../../images/SettingIcon.svg");
+}
+
+.Setting-Menu-Container{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 150px;
+    height: 20px;
+
+}
+
+.Review, .Self-Setting{
+    color:aliceblue;
+    background-color:#F8A00C ;
+}
+.Review{
+    border-bottom:1px solid whitesmoke;
+}
