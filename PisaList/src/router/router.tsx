@@ -37,7 +37,7 @@ const router=createBrowserRouter([
     element:<WishCommunity/>
 },
 {
-    path:"/personalReview",
+    path:"/review",
     element:<PersonalReview/>
 }
 

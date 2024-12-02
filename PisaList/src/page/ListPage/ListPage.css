@@ -70,7 +70,7 @@
 .finishTask{
     background-image: url("../../images/tick.svg");
     position: absolute;
-    top:3%;
+    top:3px;
     right:1%;
     width: 10px;
     height: 10px;
@@ -78,7 +78,7 @@
 .deleteTask{
     background-image: url("../../images/delete.svg");
     position: absolute;
-    top:24%;
+    top:38px;
     right:1%;
     width: 10px;
     height: 21px;

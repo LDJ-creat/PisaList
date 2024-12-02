@@ -93,7 +93,7 @@ const taskSlice = createSlice({
             description:state.tasks[i].description,            
             completed:state.tasks[i].completed,
             is_cycle:state.tasks[i].is_cycle,
-            importanceLevel:i,
+            importanceLevel:i,//重新定义importanceLevel
             completed_Date:state.tasks[i].completed_Date,
           })
         }

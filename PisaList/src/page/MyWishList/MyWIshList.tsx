@@ -2,7 +2,7 @@ import "./MyWishList.css"
 import { useState, useEffect} from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import {addTask,deleteWish,setAppearance,updateWishes,switchCycle} from '../../redux/Store.tsx';
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
 import Nav from "../../components/Nav/Nav";
 import AddWishMenu from "../../components/AddWishMenu/AddWishMenu.tsx";
 interface Task {
@@ -14,11 +14,28 @@ interface Task {
     importanceLevel: number;
     completed_Date: string;
 }
+interface Wish {
+  id:string;
+  event:string;
+  is_cycle:boolean;
+  description:string;
+  is_shared:boolean;
+}
+interface RootState {
+  wishes:{
+      wishes: Wish[];
+  }
+}
+interface RootState2 {
+    appearance: {
+        appear: boolean;
+    };
+}
 const MyWishList = () => {
     const [date,setDate] = useState("");
-    const appear=useSelector((state: any) => state.appearance.appear);
+    const appear=useSelector((state: RootState2) => state.appearance.appear);
     const dispatch = useDispatch();
-    let wishes = useSelector((state: any) => state.wishes.wishes);
+    const wishes = useSelector((state: RootState) => state.wishes.wishes);
     const handleWishTask=(index:number)=>{
         const newTask: Task = {
             id: Date.now().toString(),
@@ -38,7 +55,15 @@ const MyWishList = () => {
         dispatch(deleteWish(index));
     }
 
-    const onDragEnd = (result:any) => {
+    interface DragResult {
+      source: {
+          index: number;
+      };
+      destination: {
+          index: number;
+      } | null;
+  }
+    const onDragEnd = (result:DragResult) => {
         if (!result.destination) return;
         const newTodos = [...wishes];
         const [removedTodo] = newTodos.splice(result.source.index, 1);
@@ -66,10 +91,10 @@ const MyWishList = () => {
     
     <div id="wish-list-container"  className={`${appear?"blur":""}`}>
       <Droppable droppableId="todo">
-          {((provided:any)=>(
+          {((provided:DroppableProvided)=>(
               <div className="wish-list" ref={provided.innerRef} {...provided.droppableProps}>
   
-         {wishes.map((task:any, index:any) => (
+         {wishes.map((wish:Wish, index:number) => (
 <Draggable index={index} key={index} draggableId={`todo-${index}`}>
   {(provided) => {
     return  (
@@ -80,8 +105,8 @@ const MyWishList = () => {
           {/* 为什么都无效呢 */}
           <button className="WishTask Bgi" onClick={() => handleWishTask(index)}></button>
           <button className="deleteWish Bgi" onClick={() => handleDelete(index)}></button>
-          <p className='wishListName'>{task.event}</p>
-          <p className='wish-description'>{task.description}</p>
+          <p className='wishListName'>{wish.event}</p>
+          <p className='wish-description'>{wish.description}</p>
         </div>
       </div>
     );

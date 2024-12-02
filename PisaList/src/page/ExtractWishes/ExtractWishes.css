@@ -37,9 +37,6 @@
     cursor: pointer;
   }
   
-  .myCard:hover .innerCard {
-    transform: rotateY(180deg);
-  }
   
   .frontSide,
   .backSide {

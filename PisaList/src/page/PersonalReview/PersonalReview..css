@@ -1,7 +1,7 @@
 .personal-review-container {
     display:flex;
     flex-direction: column;
-    justify-content: center;
+    /* justify-content: center; 会有上方被遮盖的问题*/
     align-items: center;
     background-image: url("../../images/背景垫图.png");
     background-attachment: scroll;
@@ -37,7 +37,7 @@
     border-radius: 50%;
     position: absolute;
     top:3%;
-    left: -1%;
+    left: -7px;
 }
 .personal-review-item-date{
     font-size: 14px;

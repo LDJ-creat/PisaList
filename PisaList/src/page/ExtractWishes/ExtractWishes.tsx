@@ -1,4 +1,4 @@
-import { useEffect, useRef,useState } from "react";
+import {useEffect, useRef,useState } from "react";
 import "./ExtractWishes.css"
 // import axios from "axios";
 import Nav from "../../components/Nav/Nav";
@@ -11,9 +11,14 @@ interface Wish {
     description:string;
     is_shared:boolean;
   }
+interface RootState {
+    wishes: {
+      wishes: Wish[];
+    };
+  }
 const ExtractWishes = () => {
     const dispatch = useDispatch();
-    const wishes=useSelector((state:any)=>state.wishes.wishes);
+    const wishes=useSelector((state:RootState)=>state.wishes.wishes);
     const [randomWish, setRandomWish] = useState<Wish>();
     const [randomIndex, setRandomIndex] = useState<number>();
     const innerCardRef=useRef<HTMLDivElement>(null);
@@ -35,7 +40,7 @@ const ExtractWishes = () => {
     const handleAddToMine = () => {
         dispatch(addWish(randomWish))
     }
-    const getRandomWish = async() => {
+    const getRandomWish =async() => {
         if(wishes.length>0){
             while(true){
             const random=Math.floor(Math.random()*wishes.length);
@@ -50,10 +55,11 @@ const ExtractWishes = () => {
         // const res=await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish/random`);
         // setRandomWish(res.data);
         // }
+    
     }
     useEffect(()=>{
         getRandomWish();
-    },[])
+    },[])//react-hooks/exhaustive-deps 规则是为了确保 useEffect 中使用的所有外部变量（包括函数）在依赖项数组中都有正确体现。这是因为 React 的 useEffect 钩子在组件更新时，会根据依赖项数组来判断是否需要重新执行 useEffect 内部的函数。
     return (
     <div className="ExtractWishes-container">
         <div className="myCard">

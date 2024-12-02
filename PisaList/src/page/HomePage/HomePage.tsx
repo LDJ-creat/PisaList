@@ -8,9 +8,28 @@ import { useNavigate } from "react-router-dom"
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
 
+interface Task {
+    id: string;
+    event: string;
+    completed: boolean;
+    is_cycle: boolean;
+    description: string;
+    importanceLevel:number;
+    completed_Date: string;
+}
+interface RootState {
+    tasks:{
+        tasks: Task[];
+    }
+}
+interface RootState2{
+    appearance:{
+        appear:boolean;
+    };
+}
 const HomePage=()=>{
-    let tasks = useSelector((state:any) => state.tasks.tasks);
-    const appear=useSelector((state:any)=>state.appearance.appear)
+    const tasks = useSelector((state:RootState) => state.tasks.tasks);
+    const appear=useSelector((state:RootState2)=>state.appearance.appear)
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [date,setDate] = useState("");
@@ -31,7 +50,7 @@ const HomePage=()=>{
             <img src={Pisa} alt="" className={`${appear?"blur":""}`}/>
             <div className={`finish-content   ${appear?"blur":""}`}>
                 //{date}---今天完成了
-                {tasks.map((task:any, index:number) => {
+                {tasks.map((task:Task, index:number) => {
                     return task.completed&&task.completed_Date==date?(
                     <div key={index} className="finish-item">
                         {task.event}---{task.description}

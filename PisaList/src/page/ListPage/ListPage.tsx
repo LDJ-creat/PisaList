@@ -2,30 +2,59 @@ import "./ListPage.css";
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import {  deleteTask, updateTask,finishTask } from '../../redux/Store.tsx';
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
 import Nav from "../../components/Nav/Nav";
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
 
+interface Task {
+  id: string;
+  event: string;
+  completed: boolean;
+  is_cycle: boolean;
+  description: string;
+  importanceLevel:number;
+  completed_Date: string;
+}
+interface RootState {
+  tasks:{
+      tasks: Task[];
+  }
+}
+interface RootState2{
+  appearance:{
+      appear:boolean;
+  };
+}
 const ListPage = () => {
     const [date,setDate] = useState("");
     const dispatch = useDispatch();
-    let tasks = useSelector((state: any) => state.tasks.tasks);
-    const filteredTasks = tasks.filter((task:any) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date));
-    const appear=useSelector((state:any)=>state.appearance.appear)
+    const tasks = useSelector((state: RootState) => state.tasks.tasks);
+    const filteredTasks = tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date));
+    const appear=useSelector((state:RootState2)=>state.appearance.appear)
     const handleDelete=(index:number)=>{
+      console.log("delete");
         dispatch(deleteTask(index));
     }
 
     const handleFinish=(index:number)=>{
         // setTimeout(()=>{dispatch(finishTask(index))},600);
+        console.log("finish");
         dispatch(finishTask(index));
-    }
+  }
 
-    const onDragEnd = (result:any) => {
-        if (!result.destination) return;
+  interface DragResult {
+    source: {
+        index: number;
+    };
+    destination: {
+        index: number;
+    } | null;
+}
+  const onDragEnd = (result: DragResult) => {
+    if (!result.destination) return;
         const newTodos = [...tasks];
-        const [removedTodo] = newTodos.splice(result.source.index, 1);
+        const [removedTodo]  = newTodos.splice(result.source.index, 1);
         newTodos.splice(result.destination.index, 0, removedTodo);
         // 在这里可以触发状态更新或回调函数，以更新任务列表
         dispatch(updateTask(newTodos));
@@ -51,9 +80,9 @@ const ListPage = () => {
     
     <div id="task-list-container"  className={`${appear?"blur":""}`}>
       <Droppable droppableId="todo">
-          {((provided:any)=>(
+          {((provided:DroppableProvided)=>(
               <div className="task-list" ref={provided.innerRef} {...provided.droppableProps}>
-         {filteredTasks.map((task:any, index:any) => (
+         {filteredTasks.map((task:Task, index:number) => (
 <Draggable index={index} key={index} draggableId={`todo-${index}`}> 
   {(provided) => {
 
