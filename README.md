@@ -1,2 +1,2 @@
-#2024 HackWeek
-update at random time
+# 2024 HackWeek
+**Update at irregular intervals** 
