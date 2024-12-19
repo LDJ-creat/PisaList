@@ -1,7 +1,7 @@
 import "./HomePage.css"
 import Pisa from "../../images/披萨主图.svg"
 import { useSelector,useDispatch } from "react-redux"
-import { useEffect,useState} from "react"
+import { useEffect,useState,createRef} from "react"
 import Nav from "../../components/Nav/Nav.tsx"
 import PieChart from "../../components/PieChart/PieChart.tsx"
 import { useNavigate } from "react-router-dom"
@@ -32,6 +32,7 @@ const HomePage=()=>{
     const appear=useSelector((state:RootState2)=>state.appearance.appear)
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const addRef = createRef<HTMLDivElement>();
     const [date,setDate] = useState("");
     const [settingMenu,setSettingMenu]=useState(false);
     // const [addTaskMenu,setAddTaskMenu] = useState(false);
@@ -45,6 +46,20 @@ const HomePage=()=>{
         };
         setDate(getDate());
     },[])
+
+    //添加监听器，当添加任务菜单显示时，点击菜单外任意处，菜单消失
+    useEffect(()=>{
+        const handleClickOutside=(event: MouseEvent)=>{
+          
+            if(appear&&addRef.current&&!addRef.current.contains(event.target as Node)){
+                dispatch(setAppearance());
+            }
+          }
+            document.addEventListener('mousedown',handleClickOutside);
+            return ()=>document.removeEventListener('mousedown',handleClickOutside);
+  
+        
+      },[appear,addRef,dispatch])
     return(
         <div className="HomePage-container">
             <img src={Pisa} alt="" className={`${appear?"blur":""}`}/>
@@ -67,7 +82,7 @@ const HomePage=()=>{
             </div>}
             <button className="addTask Bgi" onClick={()=>dispatch(setAppearance())}></button>
             <PieChart/>
-            {appear&&<AddTaskMenu/>}
+            {appear&&<AddTaskMenu ref={addRef}/>}
             <Nav/>
         </div>
     )

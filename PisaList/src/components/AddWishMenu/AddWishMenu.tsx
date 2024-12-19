@@ -1,4 +1,4 @@
-import {  useState} from 'react';
+import {  useState,forwardRef} from 'react';
 import './AddWishMenu.css';
 import { useDispatch } from 'react-redux';
 import { addWish } from '../../redux/Store.tsx';
@@ -12,7 +12,7 @@ interface Wish {
     description:string;
     is_shared:boolean;
   }
-const AddWish = () => {
+const AddWish = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, ref) => {
     const dispatch = useDispatch();
     const [value, setValue] = useState('');
     const [description, setDescription] = useState('');
@@ -44,7 +44,7 @@ const AddWish = () => {
 
     }
     return (
-        <div id='addWishMenu' className='Bgi'>
+        <div id='addWishMenu' className='Bgi'  ref={ref}>
             <input type="text"  placeholder="输入心愿名称" value={value} onChange={(e) => setValue(e.target.value)} id='wishName'></input>
             <div id='WishRectangle'>————————————————</div>
             <input type="text"  placeholder="描述or详细介绍(例如具体项目、时间)" value={description} onChange={(e) => setDescription(e.target.value)} id='wishDescription'></input>
@@ -53,12 +53,11 @@ const AddWish = () => {
                 {isCycle && <button id='wishCycle' className='Bgi' onClick={() => setIsCycle(!isCycle)}></button>}
             </div>
             <div id='setWishShared'>
-                <button id='isWishShared' className='Bgi' onClick={() => setIsCycle(!isShared)}></button>
-                 {/* <button id='wishShared' className='Bgi' onClick={() => setIsShared(!isShared)}></button> */}
+                <button id='isWishShared' className='Bgi' onClick={() => setIsShared(!isShared)}></button>
                 {isShared && <button id='wishShared' className='Bgi' onClick={() => setIsShared(!isShared)}></button>}
-            </div>
+            </div> 
             <button onClick={handleSubmit} id='addWishButton' className='Bgi' ></button>
         </div>
     )
-}
+})
 export default AddWish

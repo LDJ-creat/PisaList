@@ -91,6 +91,8 @@
     flex-shrink: 0;
     border:none;
 }
+
+
 #setWishCycle{
     width: 183.109px;
     height: 29px;
@@ -98,7 +100,7 @@
     position: relative;
 }
 #isWishCycle{
-    background-image: url('../../images/是否循环.svg');
+    background-image: url('../../images/是否分享.svg');
     width: 183.109px;
     height: 32px;
     flex-shrink: 0;
@@ -117,6 +119,10 @@
     height: 23px;
     flex-shrink: 0;
     border:none;
+}
+
+#isWishShared:hover, #wishShared:hover, #isWishCycle:hover, #wishCycle:hover{
+   transform: scale(1.0);
 }
 #addWishButton{
     width: 58px;

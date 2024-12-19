@@ -111,7 +111,11 @@ const taskSlice = createSlice({
           localStorage.setItem('tasks', JSON.stringify(state.tasks));
         }
     },
+    isCycle:(state, action)=>{
+        state.tasks[action.payload].is_cycle=!state.tasks[action.payload].is_cycle;
+        localStorage.setItem('tasks', JSON.stringify(state.tasks));
 
+    },
     getTasks:(state,action)=>{
       state.tasks=action.payload;
     },
@@ -219,9 +223,9 @@ const store = configureStore({
 });
 
 const { setAppearance } = appearance.actions;
-const { addTask, deleteTask,updateTask,getTasks,finishTask } = taskSlice.actions;
+const { addTask, deleteTask,updateTask,getTasks,finishTask,isCycle } = taskSlice.actions;
 const {addWish,getWishes,deleteWish,updateWishes,switchCycle} =wishSlice.actions;
-export { addTask, deleteTask,updateTask,getTasks,finishTask,addWish,getWishes,deleteWish,updateWishes,setAppearance,switchCycle };
+export { addTask, deleteTask,updateTask,getTasks,finishTask,isCycle,addWish,getWishes,deleteWish,updateWishes,setAppearance,switchCycle };
 export default store;
 
 

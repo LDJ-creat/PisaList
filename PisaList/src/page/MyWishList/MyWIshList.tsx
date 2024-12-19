@@ -1,5 +1,5 @@
 import "./MyWishList.css"
-import { useState, useEffect} from "react";
+import { useState, useEffect,createRef} from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import {addTask,deleteWish,setAppearance,updateWishes,switchCycle} from '../../redux/Store.tsx';
 import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
@@ -33,6 +33,7 @@ interface RootState2 {
 }
 const MyWishList = () => {
     const [date,setDate] = useState("");
+    const addWishRef=createRef<HTMLDivElement>();
     const appear=useSelector((state: RootState2) => state.appearance.appear);
     const dispatch = useDispatch();
     const wishes = useSelector((state: RootState) => state.wishes.wishes);
@@ -81,6 +82,19 @@ const MyWishList = () => {
         };
         setDate(getDate());
     },[])
+
+    useEffect(()=>{
+      const handleClickOutside=(event: MouseEvent)=>{
+        
+          if(appear&&addWishRef.current&&!addWishRef.current.contains(event.target as Node)){
+              dispatch(setAppearance());
+          }
+        }
+          document.addEventListener('mousedown',handleClickOutside);
+          return ()=>document.removeEventListener('mousedown',handleClickOutside);
+
+      
+    },[appear,addWishRef,dispatch])
     return(
         <div className="MyWishList-container">
         <div className="show-Date">{date}</div>
@@ -120,7 +134,7 @@ const MyWishList = () => {
     </Droppable>
     </div>
     </DragDropContext>
-    {appear&&<AddWishMenu/>}
+    {appear&&<AddWishMenu ref={addWishRef}/>}
     <Nav/>     
   </div>
     )

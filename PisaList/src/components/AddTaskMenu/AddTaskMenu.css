@@ -91,6 +91,10 @@
     flex-shrink: 0;
     border:none;
 }
+
+#isTaskCycle:hover, #TaskCycle:hover{
+    transform: scale(1.0);
+}
 #addTaskButton{
     width: 58px;
     height: 57px;

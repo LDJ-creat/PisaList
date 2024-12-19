@@ -3,16 +3,15 @@
     top:31.5vh;
     left:50vw;
     transform:translate(-50%,-50%);
-    width: 245px;
-    height: 245px;
+    width: 249px;
+    height: 249px;
 }
 
-/* canvas{
-    width: 200px;
-    height: 200px;
+@media screen and (max-width: 480px){
+    .PieChart{
+        width: 260px;
+        height: 260px;
+    }
+    
 }
 
-.chart-container{
-    width: 280px;
-    height: 280px;
-} */

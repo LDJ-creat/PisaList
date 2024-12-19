@@ -17,22 +17,26 @@ interface Task {
   completed_Date: string;
 }
 
-
+interface RootState {
+  tasks: {
+    tasks: Task[];
+  };
+}
 
 const PieChart: React.FC = () => {
-  const tasks = useSelector((state: any) => state.tasks.tasks);
-  const [taskLabel,setTaskLabel]=useState([]);
-  const [chartData,setChartData]=useState([]);
+  const tasks = useSelector((state: RootState) => state.tasks.tasks);
+  const [taskLabel,setTaskLabel]=useState<string[]>([]);
+  const [chartData,setChartData]=useState<number[]>([]);
   // const [newTaskName, setNewTaskName] = useState('');
   // const [newTaskDescription, setNewTaskDescription] = useState('');
   // const dispatch = useDispatch();
 
   useEffect(() => {
-    let tempLabel:any=[];
-    let tempData:any=[];
+    const tempLabel:string[]=[];
+    const tempData:number[]=[];
     //运用等比数列
     if(tasks.length>0){
-    let a1=100/(Math.pow(1.6,tasks.length)-1)
+    const a1=100/(Math.pow(1.6,tasks.length)-1)
     tasks.map((task: Task) => {
       tempLabel.push(task.event);
     });

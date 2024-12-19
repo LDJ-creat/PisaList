@@ -1,7 +1,7 @@
 import "./ListPage.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect,createRef } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import {  deleteTask, updateTask,finishTask } from '../../redux/Store.tsx';
+import {  deleteTask, updateTask,finishTask ,isCycle} from '../../redux/Store.tsx';
 import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
 import Nav from "../../components/Nav/Nav";
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
@@ -28,20 +28,23 @@ interface RootState2{
 }
 const ListPage = () => {
     const [date,setDate] = useState("");
+    const addRef = createRef<HTMLDivElement>();
     const dispatch = useDispatch();
     const tasks = useSelector((state: RootState) => state.tasks.tasks);
     const filteredTasks = tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date));
     const appear=useSelector((state:RootState2)=>state.appearance.appear)
     const handleDelete=(index:number)=>{
-      console.log("delete");
+      // console.log("delete");
         dispatch(deleteTask(index));
     }
 
+
     const handleFinish=(index:number)=>{
         // setTimeout(()=>{dispatch(finishTask(index))},600);
-        console.log("finish");
+        // console.log("finish");
         dispatch(finishTask(index));
   }
+
 
   interface DragResult {
     source: {
@@ -70,6 +73,19 @@ const ListPage = () => {
         };
         setDate(getDate());
     },[])
+
+    useEffect(()=>{
+      const handleClickOutside=(event: MouseEvent)=>{
+        
+          if(appear&&addRef.current&&!addRef.current.contains(event.target as Node)){
+              dispatch(setAppearance());
+          }
+        }
+          document.addEventListener('mousedown',handleClickOutside);
+          return ()=>document.removeEventListener('mousedown',handleClickOutside);
+
+      
+    },[appear,addRef,dispatch])
     return(
         <div className="ListPage-container">
         <div className="show-Date">{date}</div>
@@ -92,7 +108,7 @@ const ListPage = () => {
   return (
       <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
         <div className='task'>
-          {tasks[index].is_cycle ? <button className="limited-time">循环</button> : <button className="cycle-time">限时</button>}
+          {tasks[index].is_cycle ? <button className="limited-time" onClick={()=>dispatch(isCycle(index))} >循环</button> : <button className="cycle-time" onClick={()=>dispatch(isCycle(index))}>限时</button>}
           <button className="finishTask Bgi" onClick={()=>handleFinish(index)}></button>
           <button className="deleteTask Bgi" onClick={() => handleDelete(index)}></button>
           <p className='taskListName'>{task.event}</p>
@@ -113,7 +129,7 @@ const ListPage = () => {
     </Droppable>
     </div>
     </DragDropContext>
-    {appear&&<AddTaskMenu/>}
+    {appear&&<AddTaskMenu ref={addRef}/>}
     <Nav/>
 
   </div>
