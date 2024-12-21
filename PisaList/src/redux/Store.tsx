@@ -15,6 +15,13 @@ interface Wish {
   description:string;
   is_shared:boolean;
 }
+
+// interface modifyTask{
+//   id:string;
+//   event:string;
+//   description:string;
+  
+// }
 import { configureStore } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
 
@@ -26,6 +33,8 @@ interface TaskState {
 interface WishState{
   wishes: Wish[];
 }
+
+
 const initialState: TaskState = {
 
     tasks: JSON.parse(localStorage.getItem('tasks') as string) || [],
@@ -44,6 +53,32 @@ const appearance=createSlice({
   reducers: {
     setAppearance:(state)=>{
       state.appear=!state.appear;
+    }
+  }
+})
+
+const modifyTask=createSlice({
+  name: 'modifyTask',
+  initialState: {
+    modifyTask: {
+      id:'',
+      event: '',
+      description: '',
+      isCycle:false,
+      completed:false,
+      importanceLevel:0,
+      completed_Date:''
+    }
+  },
+  reducers: {
+    // setTaskEvent: (state, action) => {
+    //   state.modifyTask.event = action.payload;
+    // },
+    // setTaskDescription: (state, action) => {
+    //   state.modifyTask.description = action.payload;
+    // }
+    modify:(state,action)=>{
+      state.modifyTask=action.payload;
     }
   }
 })
@@ -66,9 +101,18 @@ const taskSlice = createSlice({
         localStorage.setItem('tasks', JSON.stringify(state.tasks));
       }
     },
-
+    modify_Task:(state,action)=>{
+      const index=state.tasks.findIndex(task=>task.id===action.payload.id);
+      if(index!==-1){//判断是否找到
+      state.tasks[index].event=action.payload.event;
+      state.tasks[index].description=action.payload.description;
+      state.tasks[index].is_cycle=action.payload.is_cycle;
+      localStorage.setItem('tasks', JSON.stringify(state.tasks));
+      }
+    },
     deleteTask:(state, action)=>{
-        state.tasks.splice(action.payload, 1);
+      const index=state.tasks.findIndex(task=>task.id===action.payload);
+        state.tasks.splice(index, 1);
         const token=localStorage.getItem('token');
         if(token){
           const deleteTask=async()=>{
@@ -112,7 +156,9 @@ const taskSlice = createSlice({
         }
     },
     isCycle:(state, action)=>{
-        state.tasks[action.payload].is_cycle=!state.tasks[action.payload].is_cycle;
+        // state.tasks[action.payload].is_cycle=!state.tasks[action.payload].is_cycle;
+        const index=state.tasks.findIndex(task=>task.id===action.payload);
+        state.tasks[index].is_cycle=!state.tasks[index].is_cycle;
         localStorage.setItem('tasks', JSON.stringify(state.tasks));
 
     },
@@ -125,8 +171,11 @@ const taskSlice = createSlice({
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
-      state.tasks[action.payload].completed=true;
-      state.tasks[action.payload].completed_Date=`${year}-${month}-${day}`;
+      // state.tasks[action.payload].completed=true;
+      // state.tasks[action.payload].completed_Date=`${year}-${month}-${day}`;
+      const index=state.tasks.findIndex(task=>task.id===action.payload);
+      state.tasks[index].completed=true;
+      state.tasks[index].completed_Date=`${year}-${month}-${day}`;
       const token=localStorage.getItem('token');
       if(token){
         const finish=async()=>{
@@ -219,13 +268,15 @@ const store = configureStore({
     tasks: taskSlice.reducer,
     wishes: wishSlice.reducer,
     appearance: appearance.reducer,
+    modifyTask: modifyTask.reducer,
   },
 });
 
 const { setAppearance } = appearance.actions;
-const { addTask, deleteTask,updateTask,getTasks,finishTask,isCycle } = taskSlice.actions;
+const { modify } = modifyTask.actions;
+const { addTask,modify_Task, deleteTask,updateTask,getTasks,finishTask,isCycle } = taskSlice.actions;
 const {addWish,getWishes,deleteWish,updateWishes,switchCycle} =wishSlice.actions;
-export { addTask, deleteTask,updateTask,getTasks,finishTask,isCycle,addWish,getWishes,deleteWish,updateWishes,setAppearance,switchCycle };
+export { addTask,modify_Task, deleteTask,updateTask,getTasks,finishTask,isCycle,addWish,getWishes,deleteWish,updateWishes,setAppearance,switchCycle,modify };
 export default store;
 
 

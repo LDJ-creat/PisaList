@@ -56,8 +56,8 @@ const PieChart: React.FC = () => {
     label:taskLabel,
     datasets: [
       {
-        label: 'To Do List',
-        data:chartData ,
+        label: 'Pisa List',
+        data: chartData,
         backgroundColor: ['#F6B45DED'],
         hoverOffset: 4,
 

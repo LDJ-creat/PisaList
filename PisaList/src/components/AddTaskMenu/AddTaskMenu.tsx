@@ -1,8 +1,8 @@
 import { useState, forwardRef } from 'react';
 import './AddTaskMenu.css';
-import { useDispatch } from 'react-redux';
-import { addTask } from '../../redux/Store.tsx';
-import { setAppearance } from "../../redux/Store.tsx"
+import { useDispatch,useSelector } from 'react-redux';
+import { addTask,modify_Task } from '../../redux/Store.tsx';
+import { setAppearance} from "../../redux/Store.tsx"
 
 interface Task {
     id: string;
@@ -14,19 +14,52 @@ interface Task {
     completed_Date: string;
 }
 
-const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, ref) => {
+interface ModifyTask{
+    modifyTask:{
+        modifyTask:{
+            id:string;
+            event:string;
+            description:string;
+            isCycle:boolean;
+            completed:boolean;
+            importanceLevel:number;
+            completed_Date:string;
+        }
+    }
+}
+
+const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown,taskId?:string }>(({taskId}, ref) => {
     const dispatch = useDispatch();
-    const [value, setValue] = useState('');
-    const [description, setDescription] = useState('');
-    const [isCycle, setIsCycle] = useState(false);
+    const modifyTask=useSelector((state:ModifyTask)=>state.modifyTask.modifyTask)
+    const [value, setValue] = useState(modifyTask.event);
+    const [description, setDescription] = useState(modifyTask.description);
+    const [isCycle, setIsCycle] = useState(modifyTask.isCycle);
 
     const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        e.stopPropagation();//
-        if (!value) return;
-        setValue('');
-        setDescription('');
-        if (value.trim() !== '') {
+        // e.stopPropagation();
+        if (taskId) {
+            if (!value&&value.trim() === '') return;
+            if(typeof taskId!=='string') return;
+            // dispatch(modify({id:taskId,event:value,description:description,isCycle:isCycle}))
+            const newTask: Task = {
+                id: taskId,
+                event: value,
+                completed: modifyTask.completed,
+                is_cycle: isCycle,
+                description: description,
+                importanceLevel: modifyTask.importanceLevel,
+                completed_Date: modifyTask.completed_Date,
+            };
+            dispatch(modify_Task(newTask))//这样写无法实现修改，因为执行这步时modifyTask还未被修改，所以还是原来的值
+            dispatch(setAppearance());
+            // setValue('');
+            // setDescription('');
+        }else{
+            if (!value&&value.trim() === '') return;
+            // setValue('');
+            // setDescription('');
+        
             const newTask: Task = {
                 id: Date.now().toString(),
                 event: value,
@@ -38,6 +71,7 @@ const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, 
             };
             dispatch(addTask(newTask));
             dispatch(setAppearance());
+            
         }
     };
 

@@ -1,11 +1,12 @@
 import "./ListPage.css";
 import { useState, useEffect,createRef } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import {  deleteTask, updateTask,finishTask ,isCycle} from '../../redux/Store.tsx';
+import {  deleteTask, updateTask,finishTask ,isCycle, modify } from '../../redux/Store.tsx';
 import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
 import Nav from "../../components/Nav/Nav";
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
+
 
 interface Task {
   id: string;
@@ -26,34 +27,60 @@ interface RootState2{
       appear:boolean;
   };
 }
+interface RootState3{//注意层级结构
+  modifyTask:{
+    modifyTask:{
+      id:string;
+      event:string;
+      description:string;
+      isCycle:boolean;
+      completed:boolean;
+      importanceLevel:number;
+      completed_Date:string;
+    };
+  }
+}
+interface DragResult {
+  source: {
+      index: number;
+  };
+  destination: {
+      index: number;
+  } | null;
+}
+
 const ListPage = () => {
+  const modifyTask=useSelector((state:RootState3) => state.modifyTask.modifyTask)
     const [date,setDate] = useState("");
     const addRef = createRef<HTMLDivElement>();
     const dispatch = useDispatch();
     const tasks = useSelector((state: RootState) => state.tasks.tasks);
-    const filteredTasks = tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date));
+    const [filteredTasks,setFilteredTasks]=useState(tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date)));
+    // const filteredTasks = tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date));
     const appear=useSelector((state:RootState2)=>state.appearance.appear)
-    const handleDelete=(index:number)=>{
-      // console.log("delete");
-        dispatch(deleteTask(index));
+    const handleDelete=(taskId:string)=>{//参数要用id不用index，因为index会变化从而导致错乱
+        dispatch(deleteTask(taskId));
     }
 
+    const handleModify=(taskId:string)=>{
+      const taskToModify=tasks.find((task:Task) => task.id===taskId);
+      if(taskToModify){
+        dispatch(modify({id:taskId,event:taskToModify.event,description:taskToModify.description,isCycle:taskToModify.is_cycle
+          ,completed:taskToModify.completed,importanceLevel:taskToModify.importanceLevel,completed_Date:taskToModify.completed_Date
+        }));
+        dispatch(setAppearance());
+      
+      // console.log("modify task event after dispatch:",modifyTask.event);
+      // console.log("modify task description after dispatch:",modifyTask.description);--不会马上更新，所以无法得到结果
+      }
+    }
 
-    const handleFinish=(index:number)=>{
-        // setTimeout(()=>{dispatch(finishTask(index))},600);
-        // console.log("finish");
-        dispatch(finishTask(index));
+    
+    const handleFinish=(taskId:string)=>{
+
+        dispatch(finishTask(taskId));
   }
 
-
-  interface DragResult {
-    source: {
-        index: number;
-    };
-    destination: {
-        index: number;
-    } | null;
-}
   const onDragEnd = (result: DragResult) => {
     if (!result.destination) return;
         const newTodos = [...tasks];
@@ -74,6 +101,24 @@ const ListPage = () => {
         setDate(getDate());
     },[])
 
+    useEffect(()=>{
+      setFilteredTasks(tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date)));
+    },[date, tasks])
+
+    //添加菜单栏消失则清空modifyTask
+    useEffect(() => {
+      if(!appear){
+      dispatch(modify({id:'',event:'',description:'',isCycle:false}))
+      }
+    },[appear,dispatch])
+
+    //测试modifyTask是否能正常更新
+  //   useEffect(() => {
+  //     console.log("modify task event after dispatch:", modifyTask.event);
+  //     console.log("modify task description after dispatch:", modifyTask.description);
+  // }, [modifyTask]);
+
+    //点击添加菜单外任意处关闭菜单
     useEffect(()=>{
       const handleClickOutside=(event: MouseEvent)=>{
         
@@ -98,19 +143,18 @@ const ListPage = () => {
       <Droppable droppableId="todo">
           {((provided:DroppableProvided)=>(
               <div className="task-list" ref={provided.innerRef} {...provided.droppableProps}>
-         {filteredTasks.map((task:Task, index:number) => (
-<Draggable index={index} key={index} draggableId={`todo-${index}`}> 
+          {filteredTasks.map((task:Task, index:number) => (
+<Draggable index={index} key={task.id} draggableId={`todo-${task.id}`}> 
   {(provided) => {
 
-// return tasks[index].completed==false||tasks[index].completed==true&&tasks[index].completed_Date!=date ? null : (---不可以这样写是因为
-//如果返回null,可能会没有正确地处理 provided.innerRef 的赋值，导致后续使用 provided.innerRef 的地方（比如 DragDropContext 等相关组件内部逻辑）找不到预期的 HTMLElement 引用，从而报错。
-//解决方法：将判断提前，符合条件的存入filteredTasks中，然后在map中直接渲染filteredTasks中的任务，这样就不需要在map中进行判断了。
+
   return (
       <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-        <div className='task'>
-          {tasks[index].is_cycle ? <button className="limited-time" onClick={()=>dispatch(isCycle(index))} >循环</button> : <button className="cycle-time" onClick={()=>dispatch(isCycle(index))}>限时</button>}
-          <button className="finishTask Bgi" onClick={()=>handleFinish(index)}></button>
-          <button className="deleteTask Bgi" onClick={() => handleDelete(index)}></button>
+        {/* 双击删除任务 */}
+          <div className="task" onDoubleClick={()=>handleDelete(task.id)}> 
+          {task.is_cycle ? <button className="limited-time" onClick={()=>dispatch(isCycle(task.id))} >循环</button> : <button className="cycle-time" onClick={()=>dispatch(isCycle(index))}>限时</button>}
+          <button className="finishTask Bgi" onClick={()=>handleFinish(task.id)}></button>
+          <button className="deleteTask Bgi" onClick={() =>handleModify(task.id) }></button>
           <p className='taskListName'>{task.event}</p>
           <p className='task-description'>{task.description}</p>
         </div>
@@ -129,25 +173,16 @@ const ListPage = () => {
     </Droppable>
     </div>
     </DragDropContext>
-    {appear&&<AddTaskMenu ref={addRef}/>}
+    {appear&&<AddTaskMenu ref={addRef} taskId={modifyTask.id}/>}
     <Nav/>
 
   </div>
-       
+        
     )
 }
 export default ListPage
 
-   {/* <button id='isFinishTask'onClick={()=>handleFinish(index)}></button>
-            {finish?<button id='finishTask'onClick={()=>handleFinish(index)}></button>:null} */}
-          //   <Draggable index={index} key={index} draggableId={`todo-${index}`}>
-          //   {(provided) => (
-          //     tasks[index].completed?null:<div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-          //       <div className='task'onDoubleClick={()=>handleDelete(index)}> 
-          //         {tasks[index].is_cycle?<button className="limited-time">限时</button>:<button className="cycle-time">循环</button>}
-          //         <p className='taskListName'>{task.event}</p>
-          //         <p className='task-description'>{task.description}</p>
-          //       </div>
-          //     </div>
-          //   )}
-          // </Draggable>
+
+
+
+

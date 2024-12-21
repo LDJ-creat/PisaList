@@ -31,6 +31,9 @@ interface RootState2 {
         appear: boolean;
     };
 }
+
+
+
 const MyWishList = () => {
     const [date,setDate] = useState("");
     const addWishRef=createRef<HTMLDivElement>();
@@ -116,7 +119,6 @@ const MyWishList = () => {
         <div className='MyWish'>
           {/* {wishes[index].is_cycle ? <button className="cycle-time" onClick={()=>{dispatch(switchCycle(index))}}>循环</button> : <button className="limited-time" onClick={()=>dispatch(switchCycle(index))}>限时</button>} */}
           <button className="limited-time" onClick={()=>dispatch(switchCycle(index))}>{wishes[index].is_cycle ? "循环" : "限时"}</button>
-          {/* 为什么都无效呢 */}
           <button className="WishTask Bgi" onClick={() => handleWishTask(index)}></button>
           <button className="deleteWish Bgi" onClick={() => handleDelete(index)}></button>
           <p className='wishListName'>{wish.event}</p>
