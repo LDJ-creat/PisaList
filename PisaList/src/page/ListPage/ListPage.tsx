@@ -83,11 +83,28 @@ const ListPage = () => {
 
   const onDragEnd = (result: DragResult) => {
     if (!result.destination) return;
-        const newTodos = [...tasks];
-        const [removedTodo]  = newTodos.splice(result.source.index, 1);
-        newTodos.splice(result.destination.index, 0, removedTodo);
-        // 在这里可以触发状态更新或回调函数，以更新任务列表
-        dispatch(updateTask(newTodos));
+    //注意filteredTasks的索引和tasks的索引不一致，所以要用filteredTasks的索引来获取任务
+    // 获取源和目标的索引
+    const filteredSourceIndex = result.source.index;
+    const filteredDestinationIndex = result.destination.index;
+
+    // 从 filteredTasks 获取的任务
+    const sourceTask = filteredTasks[filteredSourceIndex];
+    const destinationTask = filteredTasks[filteredDestinationIndex];
+
+    // 从原始 tasks 数组中找到源和目标任务的索引
+    const sourceIndexInTasks = tasks.findIndex(task => task.id === sourceTask.id);
+    const destinationIndexInTasks = tasks.findIndex(task => task.id === destinationTask.id);
+
+    // 重新排列任务
+    const newTodos = [...tasks];
+    const [removedTodo] = newTodos.splice(sourceIndexInTasks, 1); // 移除被拖动的任务
+    newTodos.splice(destinationIndexInTasks, 0, removedTodo); // 插入到新位置
+
+    // Dispatch the updated order
+    dispatch(updateTask(newTodos)); // 更新Redux store
+
+
         
     };
     useEffect(()=>{
@@ -144,7 +161,7 @@ const ListPage = () => {
           {((provided:DroppableProvided)=>(
               <div className="task-list" ref={provided.innerRef} {...provided.droppableProps}>
           {filteredTasks.map((task:Task, index:number) => (
-<Draggable index={index} key={task.id} draggableId={`todo-${task.id}`}> 
+<Draggable index={index} key={task.id} draggableId={task.id}> 
   {(provided) => {
 
 
