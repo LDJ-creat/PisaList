@@ -7,12 +7,13 @@ import PieChart from "../../components/PieChart/PieChart.tsx"
 import { useNavigate } from "react-router-dom"
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
+import {Drawer,Button,ConfigProvider} from "antd"
 
 interface Task {
     id: string;
     event: string;
     completed: boolean;
-    is_cycle: boolean;
+    is_cycle: boolean;   
     description: string;
     importanceLevel:number;
     completed_Date: string;
@@ -35,6 +36,12 @@ const HomePage=()=>{
     const addRef = createRef<HTMLDivElement>();
     const [date,setDate] = useState("");
     const [settingMenu,setSettingMenu]=useState(false);
+    const openSettingMenu=()=>{
+        setSettingMenu(true);
+    }
+    const closeSettingMenu=()=>{
+        setSettingMenu(false);
+    }
     // const [addTaskMenu,setAddTaskMenu] = useState(false);
     useEffect(()=>{
         const getDate=()=>{
@@ -68,24 +75,45 @@ const HomePage=()=>{
                 {tasks.map((task:Task, index:number) => {
                     return task.completed&&task.completed_Date==date?(
                     <div key={index} className="finish-item">
-                        {task.event}---{task.description}
+                        <p id="finish-item-event">{task.event}</p>
+                        <p id="finish-item-description">{task.description}</p>  
                     </div>
 
-                    ):null;
+                    ):null;  
                 })}
             </div>
+            <div>
+            <ConfigProvider
+                theme={{
+                    components: {
+                    Button: {
+                        colorIconHover:"#FFBB8E",
+                        colorIcon:"#FFBB8E",
+                    },
+                    },
+                }}
+                >
 
-            <button className="Setting-Icon Bgi" onClick={()=>setSettingMenu(!settingMenu)}></button>
+                <Button type="primary" onClick={openSettingMenu} className="Setting-Icon Bgi" ></Button>
+                <Drawer title="Self-Center" onClose={closeSettingMenu} open={settingMenu} >
+                    <p><button className="Login_Register" onClick={()=>navigate("/Login_Register")}>登录/注册</button></p>
+                    <p><button className="Review" onClick={()=>navigate("/Review")}>完成回顾</button></p> 
+                    <p><button className="aboutUs" onClick={()=>navigate("/Review")}>关于我们</button></p> 
+                     
+                </Drawer>
+            </ConfigProvider>    
+            </div>
+            {/* <button className="Setting-Icon Bgi" onClick={()=>setSettingMenu(!settingMenu)}></button>
             {settingMenu&&<div className="Setting-Menu-Container">
                 <button className="Review" onClick={()=>navigate("/review")}>完成回顾</button>
                 <button className="Self-Setting" onClick={()=>navigate("/selfSetting")}>个人中心</button>
-            </div>}
+            </div>} */}
             <button className="addTask Bgi" onClick={()=>dispatch(setAppearance())}></button>
             <PieChart/>
             {appear&&<AddTaskMenu ref={addRef}/>}
-            <Nav/>
+            <Nav/>  
         </div>
     )
 
 }
-export default HomePage;
+export default HomePage;  

@@ -1,0 +1,26 @@
+#login_register{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;   
+    width: 100vw;
+    height: 100vh;
+    position:relative;
+    background-color:#FFBB8E ;
+    background-image: url("../../images/背景垫图.png");
+    background-repeat: repeat;
+}
+
+#basic{
+    width: 600px;
+    height: 340px;
+    margin-right:100px;
+}
+
+@media screen and (max-width: 480px) {
+    #basic{
+        width: 350px;
+        height: 300px;
+        margin-right:0px;
+    }
+}

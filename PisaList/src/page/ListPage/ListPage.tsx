@@ -6,6 +6,8 @@ import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello
 import Nav from "../../components/Nav/Nav";
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
+import { Button } from "antd";
+import{EditOutlined, CheckOutlined } from '@ant-design/icons';
 
 
 interface Task {
@@ -170,10 +172,12 @@ const ListPage = () => {
         {/* 双击删除任务 */}
           <div className="task" onDoubleClick={()=>handleDelete(task.id)}> 
           {task.is_cycle ? <button className="limited-time" onClick={()=>dispatch(isCycle(task.id))} >循环</button> : <button className="cycle-time" onClick={()=>dispatch(isCycle(index))}>限时</button>}
-          <button className="finishTask Bgi" onClick={()=>handleFinish(task.id)}></button>
-          <button className="deleteTask Bgi" onClick={() =>handleModify(task.id) }></button>
+          {/* <button className="finishTask Bgi" onClick={()=>handleFinish(task.id)}></button> */}
+          {/* <button className="deleteTask Bgi" onClick={() =>handleModify(task.id) }></button> */}
+          <Button shape="round" icon={<CheckOutlined />} className="finishTask " onClick={()=>handleFinish(task.id)} type="primary"></Button>
+          <Button shape="round" icon={<EditOutlined />} className="editTask " onClick={()=>handleModify(task.id)} type="primary"></Button>
           <p className='taskListName'>{task.event}</p>
-          <p className='task-description'>{task.description}</p>
+          <p className='task-description'>{task.description}</p>      
         </div>
       </div>
 
@@ -194,7 +198,7 @@ const ListPage = () => {
     <Nav/>
 
   </div>
-        
+           
     )
 }
 export default ListPage

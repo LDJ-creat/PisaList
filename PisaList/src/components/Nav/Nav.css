@@ -5,7 +5,7 @@
     border: 6px solid #FFF;
     box-shadow: 0px 0px 7.8px 0px rgba(179, 72, 0, 0.21);
     position:fixed;
-    bottom:3%;
+    bottom:35px;
     left: 50%;
     transform: translate(-50%, -50%);
     display:flex;
@@ -13,6 +13,13 @@
     justify-content: space-between;
     align-items: center;
     z-index: 100;
+}
+
+@media screen and (max-width: 480px) {
+    .bottom-nav{
+        bottom:65px;
+        left:47%;
+    }
 }
 
 button{

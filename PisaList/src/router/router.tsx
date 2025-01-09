@@ -7,6 +7,7 @@ import MyWishList from "../page/MyWishList/MyWIshList.tsx";
 import ExtractWishes from "../page/ExtractWishes/ExtractWishes.tsx";
 import WishCommunity from "../page/WishCommunity/WishCommunity.tsx";
 import PersonalReview from "../page/PersonalReview/PersonalReview.tsx";
+import Login_Register from "../page/Login_Register/Login_Register.tsx";
 const router=createBrowserRouter([
 {
     path:"/",
@@ -39,6 +40,10 @@ const router=createBrowserRouter([
 {
     path:"/review",
     element:<PersonalReview/>
+},
+{
+    path:"Login_Register",
+    element:<Login_Register/>
 }
 
 ])

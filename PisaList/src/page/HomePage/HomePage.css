@@ -35,16 +35,32 @@ img{
     color:#F8A00C;
     font-size: 20px;    
 }
-.finish-item{
+/* .finish-item{
     font-size: 16px;
-    /* color: #FFBB8E; */
     color:rgb(127, 106, 79);
     white-space: pre-wrap;
     word-wrap: break-all;
+} */
+
+#finish-item-event{
+    font-size: 20px;
+    font-weight: bold;
+    color:rgb(127, 106, 79);
+    white-space: pre-wrap;
+    word-wrap: break-all;
+    margin:0;
 }
-.finish-item::before{
-        content: "★";
-        color: #a0460b;
+
+#finish-item-description{
+    font-size:16px;
+    color:rgb(127, 106, 79);
+    white-space: pre-wrap;
+    word-wrap: break-all;
+    margin-top:3px;
+}
+
+#finish-item-event::before{
+        content: "☺"; 
 }
 
 ::-webkit-scrollbar{
@@ -74,6 +90,9 @@ img{
     top:2vh;
     right: 2vw;
 }
+.Setting-Icon:hover{
+    color:#F8A00C;
+}
 
 .Setting-Menu-Container{
     display:flex;
@@ -88,13 +107,14 @@ img{
 
 }
 
-.Review, .Self-Setting{
+.Review, .Login_Register, .aboutUs{
     color:aliceblue;
     background-color:#F8A00C ;
-    width: 90px;
+    width: 100%;
     height: 30px;
     font-size: 13px;
     text-align: center;
+    margin: bottom 5px;
 }
 .Review{
     border-bottom: 1px solid whitesmoke;

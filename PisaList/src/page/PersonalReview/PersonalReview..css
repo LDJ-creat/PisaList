@@ -19,6 +19,13 @@
     justify-content: center;
     align-items: center;
 }
+
+#personal-review-title{
+    font-size: 24px;
+    font-weight: 700;
+    margin-top: 10px;
+    color:darkgoldenrod
+}
 .personal-review-item{
     border-left:2px solid #9c6b618e;
     position: relative;

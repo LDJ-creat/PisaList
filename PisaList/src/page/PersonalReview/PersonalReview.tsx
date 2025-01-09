@@ -3,6 +3,7 @@ import { useSelector} from "react-redux";
 import { useState, useEffect } from "react";
 import { parseISO } from "date-fns";
 import Nav from "../../components/Nav/Nav";
+// import { Timeline } from "antd";
 interface Task {
     id: string;
     event: string;
@@ -31,9 +32,10 @@ const PersonalReview = () => {
             });
             setFinishTasks(sortedData);
         }
-    }, []);
+    }, [finishTasks]);
     return(
         <div className="personal-review-container">
+            <p id="personal-review-title">{finishTasks.length? "--------------------------------------Time Line------------------------------------":"------------------------------------暂未有任何任务完成喔------------------------------------"}</p>
             <div className="personal-review">
                 {finishTasks.map((task:Task,index:number)=>{
                     return(
@@ -46,6 +48,8 @@ const PersonalReview = () => {
                     )
                 })}
             </div>
+            {/* <Timeline mode="left" items={[{label:finishTasks.map((task:Task)=>{return(task.completed_Date)}),children:finishTasks.map((task:Task)=>{return(task.event)})}]}></Timeline> */}
+
             <Nav />
         </div>
     )
