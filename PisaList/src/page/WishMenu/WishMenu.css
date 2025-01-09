@@ -11,6 +11,29 @@
     background-repeat: repeat;
 }
 
+#languageBtn{
+    border-radius: 31px;
+    border: 3px solid rgba(173, 97, 5, 0.6);
+    background: #FFF0CE;
+    width: 94px;
+    height: 49px;
+    flex-shrink: 0;
+    position:relative;
+    top: 0vh;
+    left: -35vw;
+
+}
+
+.wishMenuBTNS{
+   width: 330px;
+   height: 600px;
+   display:flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   margin-bottom: 94px;
+}
+
 .wishMenuBtn{
     border-radius: 31px;
     border: 3px solid rgba(200, 109, 1, 0.60);

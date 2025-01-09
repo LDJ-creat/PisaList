@@ -4,6 +4,7 @@ import "./ExtractWishes.css"
 import Nav from "../../components/Nav/Nav";
 import { useDispatch, useSelector } from "react-redux";
 import { addWish } from "../../redux/Store.tsx";
+import{message} from "antd";
 interface Wish {
     id:string;
     event:string;
@@ -24,7 +25,7 @@ const ExtractWishes = () => {
     const innerCardRef=useRef<HTMLDivElement>(null);
     const handleExtractWish = () => {
         if(innerCardRef.current){
-        innerCardRef.current.style.transform = "rotateY(180deg)";
+        innerCardRef.current.style.transform = "rotateY(540deg)";
         }
     }
     const handleOneMore = () => {
@@ -34,16 +35,22 @@ const ExtractWishes = () => {
         // getRandomWish();
         const timer = setTimeout(() => {
             getRandomWish();
-          }, 1000);
+          }, 1500);
           return () => clearTimeout(timer);
     }
-    const handleAddToMine = () => {
+    const handleAddToMine = () => {      
         dispatch(addWish(randomWish))
+        message.success("Added to Mine successfully",2);//单位是秒
     }
     const getRandomWish =async() => {
         if(wishes.length>0){
             while(true){
             const random=Math.floor(Math.random()*wishes.length);
+            if(wishes.length==1){
+                setRandomIndex(0);
+                setRandomWish(wishes[0])
+                break;
+            }
             if(random!==randomIndex){//前后两次不重复
                 setRandomIndex(random);
                 setRandomWish(wishes[random])
@@ -59,7 +66,7 @@ const ExtractWishes = () => {
     }
     useEffect(()=>{
         getRandomWish();
-    },[])//react-hooks/exhaustive-deps 规则是为了确保 useEffect 中使用的所有外部变量（包括函数）在依赖项数组中都有正确体现。这是因为 React 的 useEffect 钩子在组件更新时，会根据依赖项数组来判断是否需要重新执行 useEffect 内部的函数。
+    })//react-hooks/exhaustive-deps 规则是为了确保 useEffect 中使用的所有外部变量（包括函数）在依赖项数组中都有正确体现。这是因为 React 的 useEffect 钩子在组件更新时，会根据依赖项数组来判断是否需要重新执行 useEffect 内部的函数。
     return (
     <div className="ExtractWishes-container">
         <div className="myCard">
