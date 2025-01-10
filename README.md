@@ -1,5 +1,6 @@
 # 2024 HackWeek
 **Update at irregular intervals** 
+```
 ┣ 📂dist
 ┃ ┣ 📂assets
 ┃ ┃ ┣ 📜index-Dxp5zAIY.js
@@ -101,3 +102,4 @@
 ┣ 📜tsconfig.json
 ┣ 📜tsconfig.node.json
 ┗ 📜vite.config.ts
+```

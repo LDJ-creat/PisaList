@@ -35,16 +35,18 @@ interface WishState{
 }
 
 
+// Helper function to check login status
+const isLoggedIn = () => !!localStorage.getItem('token');//如果不存在則返回null,!!將字串轉布林值
+
 const initialState: TaskState = {
-
-    tasks: JSON.parse(localStorage.getItem('tasks') as string) || [],
-    
+  tasks: isLoggedIn() ? [] : JSON.parse(localStorage.getItem('tasks') as string) || [],
 };
-  
+
 const wishInitialState: WishState = {
-    wishes: JSON.parse(localStorage.getItem('wishes') as string) || [],
+  wishes: isLoggedIn() ? [] : JSON.parse(localStorage.getItem('wishes') as string) || [],
 };
 
+//管理添加和修改菜單的顯示
 const appearance=createSlice({
   name: 'appearance',
   initialState:{
@@ -57,6 +59,19 @@ const appearance=createSlice({
   }
 })
 
+//管理token
+const tokenSlice=createSlice({
+  name:'token',
+  initialState:{
+    token:localStorage.getItem('token')||''
+  },
+  reducers:{
+    setToken:(state:{token:string},action:{payload:string})=>{
+      state.token=action.payload;
+    }
+  }
+})
+//修改任务
 const modifyTask=createSlice({
   name: 'modifyTask',
   initialState: {
@@ -82,22 +97,31 @@ const modifyTask=createSlice({
     }
   }
 })
+
+
+//任务管理
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
     addTask: (state, action) => {
       state.tasks.push(action.payload);
-      const token=localStorage.getItem('token');
-      if (token){
-        const add=async()=>{
-          await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/add`,
-            JSON.stringify(action.payload),
-            {headers:{Authorization:`Bearer ${token}`}},
-          )
+      const token = localStorage.getItem('token');
+      if (token) {
+        const add = async () => {
+          try {
+            await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/add`,
+              JSON.stringify(action.payload),
+              { headers: { Authorization: `Bearer ${token}` } },
+            );
+            // Clear localStorage when logged in
+            localStorage.removeItem('tasks');
+          } catch (error) {
+            console.error('Failed to add task:', error);
+          }
         };
         add();
-      }else{
+      } else {
         localStorage.setItem('tasks', JSON.stringify(state.tasks));
       }
     },
@@ -162,8 +186,12 @@ const taskSlice = createSlice({
         localStorage.setItem('tasks', JSON.stringify(state.tasks));
 
     },
-    getTasks:(state,action)=>{
-      state.tasks=action.payload;
+    initialTasks: (state, action) => {
+      state.tasks = action.payload;
+      // Clear localStorage when getting tasks from backend
+      if (localStorage.getItem('token')) {
+        localStorage.removeItem('tasks');
+      }
     },
 
     finishTask:(state, action)=>{
@@ -192,27 +220,39 @@ const taskSlice = createSlice({
 }
 });
 
+
+//心愿管理
 const wishSlice = createSlice({
   name: 'wishes',
   initialState: wishInitialState,
   reducers: {
     addWish: (state, action) => {
       state.wishes.push(action.payload);
-      const token=localStorage.getItem('token');
-      if(token){
-        const add=async()=>{
-          await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish/add`,
-            JSON.stringify(action.payload),
-            {headers:{Authorization:`Bearer ${token}`}},
-          )
+      const token = localStorage.getItem('token');
+      if (token) {
+        const add = async () => {
+          try {
+            await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish/add`,
+              JSON.stringify(action.payload),
+              { headers: { Authorization: `Bearer ${token}` } },
+            );
+            // Clear localStorage when logged in
+            localStorage.removeItem('wishes');
+          } catch (error) {
+            console.error('Failed to add wish:', error);
+          }
         };
         add();
-    }else{
-      localStorage.setItem('wishes', JSON.stringify(state.wishes));
+      } else {
+        localStorage.setItem('wishes', JSON.stringify(state.wishes));
+      }
+    },
+  initialWishes: (state, action) => {
+    state.wishes = action.payload;
+    // Clear localStorage when getting wishes from backend
+    if (localStorage.getItem('token')) {
+      localStorage.removeItem('wishes');
     }
-  },
-  getWishes:(state,action)=>{
-    state.wishes=action.payload;
   },
   deleteWish:(state, action)=>{
     state.wishes.splice(action.payload, 1);
@@ -265,6 +305,7 @@ const wishSlice = createSlice({
 
 const store = configureStore({
   reducer: {
+    token: tokenSlice.reducer,
     tasks: taskSlice.reducer,
     wishes: wishSlice.reducer,
     appearance: appearance.reducer,
@@ -274,9 +315,8 @@ const store = configureStore({
 
 const { setAppearance } = appearance.actions;
 const { modify } = modifyTask.actions;
-const { addTask,modify_Task, deleteTask,updateTask,getTasks,finishTask,isCycle } = taskSlice.actions;
-const {addWish,getWishes,deleteWish,updateWishes,switchCycle} =wishSlice.actions;
-export { addTask,modify_Task, deleteTask,updateTask,getTasks,finishTask,isCycle,addWish,getWishes,deleteWish,updateWishes,setAppearance,switchCycle,modify };
+const{ setToken } = tokenSlice.actions;
+const { addTask,modify_Task, deleteTask,updateTask,initialTasks,finishTask,isCycle } = taskSlice.actions;
+const {addWish,initialWishes,deleteWish,updateWishes,switchCycle} =wishSlice.actions;
+export { addTask,modify_Task, deleteTask,updateTask,initialTasks,finishTask,isCycle,addWish,initialWishes,deleteWish,updateWishes,setAppearance,switchCycle,modify,setToken };
 export default store;
-
-

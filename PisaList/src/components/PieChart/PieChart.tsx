@@ -1,6 +1,5 @@
-
 import { Pie } from'react-chartjs-2';
-import { Chart, registerables } from 'chart.js';
+import { Chart, registerables, TooltipItem } from 'chart.js';
 import { useSelector  } from 'react-redux';
 import './PieChart.css'
 import { useEffect,useState } from 'react';
@@ -53,10 +52,9 @@ const PieChart: React.FC = () => {
 
 
    const data={
-    label:taskLabel,
+    labels:taskLabel,
     datasets: [
       {
-        label: 'Pisa List',
         data: chartData,
         backgroundColor: ['#F6B45DED'],
         hoverOffset: 4,
@@ -72,6 +70,17 @@ const PieChart: React.FC = () => {
       legend: {
         display: false
       },
+      tooltip: {
+        callbacks: {
+          label: function(context: TooltipItem<"pie">) {
+            console.log('Tooltip context:', context);
+            return tasks[context.dataIndex].description;
+          },
+        //   afterLabel: function(tooltipItem: TooltipItem<"pie">) {
+        //     return `描述: ${tasks[tooltipItem.dataIndex].description}`;
+        //   }
+        }
+      },    
       datalabels: {
         display: false
       },
