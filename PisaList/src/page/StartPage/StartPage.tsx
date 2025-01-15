@@ -1,54 +1,17 @@
-// import { useNavigate } from "react-router-dom"
-// import {useEffect} from "react";
-// import "./StartPage.css";
-// import StartImg from "../../images/开屏.svg";
-// import axios from "axios";
-// import { useDispatch } from "react-redux";
-// import { getTasks,getWishes } from "../../redux/Store";
-// const StartPage = () => {
-//   const navigate = useNavigate();
-//   const dispatch = useDispatch();
-//   // 获取token，如果有token，则获取todolist数据并更新redux
-//   useEffect(()=>{
-//     const getData=async()=>{
-//       const token = localStorage.getItem('token');
-//       if(token){
-//       const response = await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist`,{headers:{Authorization:`Bearer ${token}`}});
-//       const res=await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish`,{headers:{Authorization:`Bearer ${token}`}})
-//       dispatch(getTasks(response.data));
-//       dispatch(getWishes(res.data));
-//       }
-//     };
-//     getData();
-//   },[dispatch]);  
-//   useEffect(() => {
-//     // 设置定时器，3秒后执行跳转函数
-//     const timer = setTimeout(() => {
-//       navigate('/Home');
-//     }, 3000);
-
-//     // 在组件卸载时清除定时器，避免内存泄漏
-//     return () => clearTimeout(timer);
-//   }, [navigate]);
-//   return( 
-//   <div className="start-page">
-//     <img src={StartImg} alt="logo" className="Start-img"/>
-//   </div>
-//   );
-// };
-
-// export default StartPage;
-
 import { useState,useEffect } from 'react'
 import { useNavigate } from "react-router-dom"
 import { useSpring, animated } from '@react-spring/web'
 import './StartPage.css'
+import axios from 'axios'
+import { useDispatch } from "react-redux"
+import { initialTasks,initialWishes } from '../../redux/Store'
 
 const AnimFeTurbulence = animated('feTurbulence')
 const AnimFeDisplacementMap = animated('feDisplacementMap')
 
 const StartPage=()=> {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [open, toggle] = useState(false)
   const [{ freq, factor, scale, opacity }] = useSpring(
     () => ({
@@ -69,6 +32,30 @@ const StartPage=()=> {
     // 在组件卸载时清除定时器，避免内存泄漏
     return () => clearTimeout(timer);
   }, [navigate]);
+    useEffect(()=>{
+      const token=localStorage.getItem('token');
+      const getData=async()=>{
+        if(token){
+          try {
+            const resTasks=await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/today`,{
+              headers:{
+                Authorization:`Bearer ${token}`
+              }
+            });
+            const resWishes=await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes`,{
+              headers:{
+                Authorization:`Bearer ${token}`
+              }
+            });
+            dispatch(initialTasks(resTasks.data));
+            dispatch(initialWishes(resWishes.data));
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        }
+      };
+      getData();
+    }, );
 
   return (
     <div className="startPage">

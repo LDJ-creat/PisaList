@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom"
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
 import {Drawer,Button,ConfigProvider} from "antd"
+import axios from "axios"
+import { initialTasks,clearToken} from "../../redux/Store.tsx"
 
 interface Task {
     id: string;
@@ -16,7 +18,7 @@ interface Task {
     is_cycle: boolean;   
     description: string;
     importanceLevel:number;
-    completed_Date: string;
+    completed_date: string;
 }
 interface RootState {
     tasks:{
@@ -30,12 +32,13 @@ interface RootState2{
 }
 const HomePage=()=>{
     const tasks = useSelector((state:RootState) => state.tasks.tasks);
-    const appear=useSelector((state:RootState2)=>state.appearance.appear)
+    const appear=useSelector((state:RootState2)=>state.appearance.appear);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const addRef = createRef<HTMLDivElement>();
     const [date,setDate] = useState("");
     const [settingMenu,setSettingMenu]=useState(false);
+
     const openSettingMenu=()=>{
         setSettingMenu(true);
     }
@@ -53,6 +56,35 @@ const HomePage=()=>{
         };
         setDate(getDate());
     },[])
+    //过滤获取今天完成的任务
+    const todayFinish=tasks.filter((task:Task)=>{
+        if(task.completed){
+            const taskDate=task.completed_date.split('T')[0];
+            return taskDate==date;
+        }
+    })
+
+    //刷新页面时重新获取数据
+    useEffect(()=>{
+        if(tasks.length===0){
+            const token=localStorage.getItem('token');
+            const getData=async()=>{
+                if(token){
+                    try {
+                        const resTasks = await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/today`,{
+                            headers:{
+                                Authorization:`Bearer ${token}`
+                            }
+                        });
+                        dispatch(initialTasks(resTasks.data));
+                    } catch (error) {
+                        console.error('Error fetching data:', error);
+                    }
+                }
+            };
+            getData();
+        }
+    }, [tasks,dispatch]);
 
     //添加监听器，当添加任务菜单显示时，点击菜单外任意处，菜单消失
     useEffect(()=>{
@@ -67,19 +99,26 @@ const HomePage=()=>{
   
         
       },[appear,addRef,dispatch])
+
+      const handleLogout=()=>{
+        dispatch(clearToken());
+        navigate("/Login_Register");
+        //刷新页面
+        window.location.reload();
+      }
     return(
         <div className="HomePage-container">
             <img src={Pisa} alt="" className={`${appear?"blur":""}`}/>
             <div className={`finish-content   ${appear?"blur":""}`}>
                 //{date}---今天完成了
-                {tasks.map((task:Task, index:number) => {
-                    return task.completed&&task.completed_Date==date?(
+                {todayFinish.map((task:Task, index:number) => {
+                    return (
                     <div key={index} className="finish-item">
                         <p id="finish-item-event">{task.event}</p>
                         <p id="finish-item-description">{task.description}</p>  
                     </div>
 
-                    ):null;  
+                    )  
                 })}
             </div>
             <div>
@@ -99,6 +138,7 @@ const HomePage=()=>{
                     <p><button className="Login_Register" onClick={()=>navigate("/Login_Register")}>登录/注册</button></p>
                     <p><button className="Review" onClick={()=>navigate("/Review")}>完成回顾</button></p> 
                     <p><button className="aboutUs" onClick={()=>navigate("/Review")}>关于我们</button></p> 
+                    <p><button className="Logout" onClick={()=>handleLogout()}>退出登录</button></p> 
                      
                 </Drawer>
             </ConfigProvider>    

@@ -12,7 +12,7 @@ interface Task {
   is_cycle: boolean;
   description: string;
   importanceLevel:number;
-  completed_Date: string;
+  completed_date: string;
 }
 
 interface RootState {
@@ -73,7 +73,6 @@ const PieChart: React.FC = () => {
       tooltip: {
         callbacks: {
           label: function(context: TooltipItem<"pie">) {
-            console.log('Tooltip context:', context);
             return tasks[context.dataIndex].description;
           },
         //   afterLabel: function(tooltipItem: TooltipItem<"pie">) {

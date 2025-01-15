@@ -1,8 +1,15 @@
 import { useState, forwardRef } from 'react';
 import './AddTaskMenu.css';
-import { useDispatch,useSelector } from 'react-redux';
-import { addTask,modify_Task } from '../../redux/Store.tsx';
-import { setAppearance} from "../../redux/Store.tsx"
+import { useDispatch, useSelector } from 'react-redux';
+import { modify_Task, addTaskAsync} from '../../redux/Store.tsx';
+import { setAppearance } from "../../redux/Store.tsx";
+import axios from 'axios';
+import { message } from 'antd';
+import { AppDispatch } from '../../redux/Store';
+
+// 设置 axios 默认配置
+axios.defaults.headers.post['Content-Type'] = 'application/json';
+axios.defaults.headers.put['Content-Type'] = 'application/json';
 
 interface Task {
     id: string;
@@ -11,67 +18,114 @@ interface Task {
     is_cycle: boolean;
     description: string;
     importanceLevel: number;
-    completed_Date: string;
+    completed_date: string;
 }
 
-interface ModifyTask{
-    modifyTask:{
-        modifyTask:{
-            id:string;
-            event:string;
-            description:string;
-            isCycle:boolean;
-            completed:boolean;
-            importanceLevel:number;
-            completed_Date:string;
+interface ModifyTask {
+    modifyTask: {
+        modifyTask: {
+            id: string;
+            event: string;
+            description: string;
+            isCycle: boolean;
+            completed: boolean;
+            importanceLevel: number;
+            completed_date: string;
         }
     }
 }
 
-const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown,taskId?:string }>(({taskId}, ref) => {
-    const dispatch = useDispatch();
-    const modifyTask=useSelector((state:ModifyTask)=>state.modifyTask.modifyTask)
+const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown, taskId?: string }>(({ taskId }, ref) => {
+    const dispatch = useDispatch<AppDispatch>();
+    const modifyTask = useSelector((state: ModifyTask) => state.modifyTask.modifyTask);
     const [value, setValue] = useState(modifyTask.event);
     const [description, setDescription] = useState(modifyTask.description);
     const [isCycle, setIsCycle] = useState(modifyTask.isCycle);
 
-    const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
+
+
+    const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault();
-        // e.stopPropagation();
-        if (taskId) {
-            if (!value&&value.trim() === '') return;
-            if(typeof taskId!=='string') return;
-            // dispatch(modify({id:taskId,event:value,description:description,isCycle:isCycle}))
-            const newTask: Task = {
-                id: taskId,
-                event: value,
-                completed: modifyTask.completed,
-                is_cycle: isCycle,
-                description: description,
-                importanceLevel: modifyTask.importanceLevel,
-                completed_Date: modifyTask.completed_Date,
-            };
-            dispatch(modify_Task(newTask))//这样写无法实现修改，因为执行这步时modifyTask还未被修改，所以还是原来的值
+
+        if (!value || value.trim() === '') {
+            message.error('请输入任务名称');
+            return;
+        }
+
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+
+        const baseURL = import.meta.env.VITE_REACT_APP_BASE_URL;
+
+        try {
+            if (taskId && typeof taskId === 'string') {
+                // 修改任务
+               
+                const newTask: Task = {
+                    id: modifyTask.id,
+                    event: value,
+                    completed: modifyTask.completed,
+                    is_cycle: isCycle,
+                    description: description,
+                    importanceLevel: modifyTask.importanceLevel,
+                    completed_date: modifyTask.completed_date,
+                };
+                if(token){
+                await axios.put(
+                    `${baseURL}/tasks/${modifyTask.id}`,
+                    {
+                        event: value,
+                        description: description,
+                        is_cycle: isCycle,
+                        importance_level: modifyTask.importanceLevel,
+                    },
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    }
+                );
+            }
+
+                dispatch(modify_Task(newTask));
+                message.success('修改成功');
+            } else {
+                const newTask = {
+                    id: Date.now().toString(),
+                    event: value,
+                    completed: false,
+                    is_cycle: isCycle,
+                    description: description,
+                    importanceLevel: 0,
+                    completed_date: '',
+                };
+
+                await dispatch(addTaskAsync(newTask)).unwrap();
+                message.success('添加成功');
+            }
+
             dispatch(setAppearance());
-            // setValue('');
-            // setDescription('');
-        }else{
-            if (!value&&value.trim() === '') return;
-            // setValue('');
-            // setDescription('');
-        
-            const newTask: Task = {
-                id: Date.now().toString(),
-                event: value,
-                completed: false,
-                is_cycle: isCycle,
-                description: description,
-                importanceLevel: 0,
-                completed_Date: '',
-            };
-            dispatch(addTask(newTask));
-            dispatch(setAppearance());
-            
+            setValue('');
+            setDescription('');
+            setIsCycle(false);
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                const errorMessage = error.response?.data?.error || '操作失败，请重试';
+                message.error(errorMessage);
+                console.error('Error details:', error.response?.data);
+            }
+            console.error('Failed:', error);
+        }
+        }
+
+    // 修改事件处理函数名和类型
+    const handleKeyDown = async (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!value || value.trim() === '') {
+                message.error('请输入任务名称');
+                return;
+            }
+            await handleSubmit(e as unknown as React.MouseEvent<HTMLButtonElement>);
         }
     };
 
@@ -82,33 +136,37 @@ const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown,taskId?:stri
                 placeholder="输入代办名称" 
                 value={value} 
                 onChange={(e) => setValue(e.target.value)} 
+                onKeyDown={handleKeyDown}  // 使用 onKeyDown
                 id='taskName'
-            ></input>
+            />
             <div id='Rectangle'>————————————————</div>
             <input 
                 type="text"  
                 placeholder="描述or详细介绍(例如具体项目、时间)" 
                 value={description} 
                 onChange={(e) => setDescription(e.target.value)} 
+                onKeyDown={handleKeyDown}  // 使用 onKeyDown
                 id='taskDescription'
-            ></input>
+            />
             <div id='setTaskCycle'>
                 <button 
                     id='isTaskCycle' 
                     className='Bgi' 
                     onClick={() => setIsCycle(!isCycle)}
-                ></button>
-                {isCycle && <button 
-                    id='TaskCycle' 
-                    className='Bgi' 
-                    onClick={() => setIsCycle(!isCycle)}
-                ></button>}
+                />
+                {isCycle && (
+                    <button 
+                        id='TaskCycle' 
+                        className='Bgi' 
+                        onClick={() => setIsCycle(!isCycle)}
+                    />
+                )}
             </div>
             <button 
                 onClick={handleSubmit} 
                 id='addTaskButton' 
                 className='Bgi' 
-            ></button>
+            />
         </div>
     );
 });

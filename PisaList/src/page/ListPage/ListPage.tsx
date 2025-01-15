@@ -8,6 +8,8 @@ import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
 import { Button } from "antd";
 import{EditOutlined, CheckOutlined } from '@ant-design/icons';
+import axios from "axios"
+import { initialTasks } from "../../redux/Store.tsx"
 
 
 interface Task {
@@ -17,7 +19,7 @@ interface Task {
   is_cycle: boolean;
   description: string;
   importanceLevel:number;
-  completed_Date: string;
+  completed_date: string;
 }
 interface RootState {
   tasks:{
@@ -38,7 +40,7 @@ interface RootState3{//注意层级结构
       isCycle:boolean;
       completed:boolean;
       importanceLevel:number;
-      completed_Date:string;
+      completed_date:string;
     };
   }
 }
@@ -57,8 +59,46 @@ const ListPage = () => {
     const addRef = createRef<HTMLDivElement>();
     const dispatch = useDispatch();
     const tasks = useSelector((state: RootState) => state.tasks.tasks);
-    const [filteredTasks,setFilteredTasks]=useState(tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date)));
+    const [filteredTasks, setFilteredTasks] = useState(tasks.filter((task:Task) => {
+      if (!task.completed) return true;
+      
+      if (task.is_cycle) {
+        const taskDate = task.completed_date.split('T')[0];
+        return taskDate != date;
+      }
+      
+      return false;
+    }));
+    // console.log(tasks[0].completed_Date!=date);
     // const filteredTasks = tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date));
+
+     //刷新页面时重新获取数据
+     const [hasTriedFetch, setHasTriedFetch] = useState(false);
+
+     useEffect(() => {
+       const token = localStorage.getItem('token');
+       // 只在有 token 且没有任务且没有尝试过获取数据时获取
+       if (token && tasks.length === 0 && !hasTriedFetch) {
+         const getData = async () => {
+           try {
+             const resTasks = await axios.get(
+               `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/today`,
+               {
+                 headers: {
+                   Authorization: `Bearer ${token}`
+                 }
+               }
+             );
+             dispatch(initialTasks(resTasks.data));
+           } catch (error) {
+             console.error('Error fetching data:', error);
+           }
+           setHasTriedFetch(true);  // 标记已经尝试过获取数据
+         };
+         getData();
+       }
+     }, [tasks.length, hasTriedFetch, dispatch]);  // 添加合适的依赖项,使用 hasTriedFetch 标记避免重复请求
+
     const appear=useSelector((state:RootState2)=>state.appearance.appear)
     const handleDelete=(taskId:string)=>{//参数要用id不用index，因为index会变化从而导致错乱
         dispatch(deleteTask(taskId));
@@ -68,12 +108,9 @@ const ListPage = () => {
       const taskToModify=tasks.find((task:Task) => task.id===taskId);
       if(taskToModify){
         dispatch(modify({id:taskId,event:taskToModify.event,description:taskToModify.description,isCycle:taskToModify.is_cycle
-          ,completed:taskToModify.completed,importanceLevel:taskToModify.importanceLevel,completed_Date:taskToModify.completed_Date
+          ,completed:taskToModify.completed,importanceLevel:taskToModify.importanceLevel,completed_date:taskToModify.completed_date
         }));
         dispatch(setAppearance());
-      
-      // console.log("modify task event after dispatch:",modifyTask.event);
-      // console.log("modify task description after dispatch:",modifyTask.description);--不会马上更新，所以无法得到结果
       }
     }
 
@@ -120,9 +157,20 @@ const ListPage = () => {
         setDate(getDate());
     },[])
 
-    useEffect(()=>{
-      setFilteredTasks(tasks.filter((task:Task) =>(task.completed==false||task.is_cycle==true&&task.completed_Date!=date)));
-    },[date, tasks])
+    useEffect(() => {
+      setFilteredTasks(
+        tasks.filter((task:Task) => {
+          if (!task.completed) return true;
+          
+          if (task.is_cycle) {
+            const taskDate = task.completed_date.split('T')[0];
+            return taskDate != date;
+          }
+          
+          return false;
+        })
+      );
+    }, [tasks, date]);  // 添加依赖项
 
     //添加菜单栏消失则清空modifyTask
     useEffect(() => {
@@ -171,9 +219,21 @@ const ListPage = () => {
       <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
         {/* 双击删除任务 */}
           <div className="task" onDoubleClick={()=>handleDelete(task.id)}> 
-          {task.is_cycle ? <button className="limited-time" onClick={()=>dispatch(isCycle(task.id))} >循环</button> : <button className="cycle-time" onClick={()=>dispatch(isCycle(index))}>限时</button>}
-          {/* <button className="finishTask Bgi" onClick={()=>handleFinish(task.id)}></button> */}
-          {/* <button className="deleteTask Bgi" onClick={() =>handleModify(task.id) }></button> */}
+          {task.is_cycle ? (
+            <button 
+              className="limited-time" 
+              onClick={() => dispatch(isCycle(task.id))}
+            >
+              循环
+            </button>
+          ) : (
+            <button 
+              className="cycle-time" 
+              onClick={() => dispatch(isCycle(task.id))}
+            >
+              限时
+            </button>
+          )}
           <Button shape="round" icon={<CheckOutlined />} className="finishTask " onClick={()=>handleFinish(task.id)} type="primary"></Button>
           <Button shape="round" icon={<EditOutlined />} className="editTask " onClick={()=>handleModify(task.id)} type="primary"></Button>
           <p className='taskListName'>{task.event}</p>

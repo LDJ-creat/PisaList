@@ -1,43 +1,30 @@
-import axios from 'axios'
-interface Task {
-    id: string;
-    event: string;
-    completed: boolean;
-    is_cycle: boolean;
-    description: string;
-    importanceLevel:number;
-    completed_Date: string;
-}
+import axios from 'axios';
+import { configureStore, createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { message } from 'antd';
+import type { Task } from '../types/Task';
+
+// 定义 Wish 接口
 interface Wish {
-  id:string;
-  event:string;
-  is_cycle:boolean;
-  description:string;
-  is_shared:boolean;
+  id: string;
+  event: string;
+  is_cycle: boolean;
+  description: string;
+  is_shared: boolean;
 }
 
-// interface modifyTask{
-//   id:string;
-//   event:string;
-//   description:string;
-  
-// }
-import { configureStore } from '@reduxjs/toolkit';
-import { createSlice } from '@reduxjs/toolkit';
-
-
+// 定义状态接口
 interface TaskState {
   tasks: Task[];
 }
 
-interface WishState{
+interface WishState {
   wishes: Wish[];
 }
 
-
 // Helper function to check login status
-const isLoggedIn = () => !!localStorage.getItem('token');//如果不存在則返回null,!!將字串轉布林值
+const isLoggedIn = () => !!localStorage.getItem('token');
 
+// 初始状态
 const initialState: TaskState = {
   tasks: isLoggedIn() ? [] : JSON.parse(localStorage.getItem('tasks') as string) || [],
 };
@@ -46,263 +33,381 @@ const wishInitialState: WishState = {
   wishes: isLoggedIn() ? [] : JSON.parse(localStorage.getItem('wishes') as string) || [],
 };
 
-//管理添加和修改菜單的顯示
-const appearance=createSlice({
+// 定义 TaskResponse 接口
+interface TaskResponse {
+  ID: number;
+  event: string;
+  description: string;
+  completed: boolean;
+  is_cycle: boolean;
+  importance_level: number;
+  completed_date?: string;
+}
+
+// 创建异步 action creators
+export const addTaskAsync = createAsyncThunk(
+  'tasks/addTaskAsync',
+  async (taskData: Task) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (token) {
+      const res = await axios.post(
+        `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks`,
+        {
+          event: taskData.event,
+          description: taskData.description,
+          is_cycle: taskData.is_cycle,
+          importance_level: 0
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      return {
+        id: String(res.data.ID),
+        event: res.data.event,
+        completed: res.data.completed,
+        is_cycle: res.data.is_cycle,
+        description: res.data.description,
+        importanceLevel: res.data.importance_level,
+        completed_date: res.data.completed_date || '',
+      } as Task;
+    }
+    return taskData;
+  }
+);
+
+export const updateTaskImportanceAsync = createAsyncThunk(
+  'tasks/updateTaskImportanceAsync',
+  async (tasks: Task[]) => {
+    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    if (!token) {
+      return tasks;
+    }
+
+    const updatedTasks = tasks.map((task, index) => ({
+      ...task,
+      importanceLevel: index
+    }));
+
+    await Promise.all(
+      updatedTasks.map(task =>
+        axios.put(
+          `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${task.id}/importance`,
+          {
+            importance_level: task.importanceLevel
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        )
+      )
+    );
+
+    return updatedTasks;
+  }
+);
+
+// 创建 slices
+const appearance = createSlice({
   name: 'appearance',
-  initialState:{
-    appear:false
+  initialState: {
+    appear: false
   },
   reducers: {
-    setAppearance:(state)=>{
-      state.appear=!state.appear;
+    setAppearance: (state) => {
+      state.appear = !state.appear;
     }
   }
-})
+});
 
-//管理token
-const tokenSlice=createSlice({
-  name:'token',
-  initialState:{
-    token:localStorage.getItem('token')||''
+const tokenSlice = createSlice({
+  name: 'token',
+  initialState: {
+    token: localStorage.getItem('token') || sessionStorage.getItem('token') || ''
   },
-  reducers:{
-    setToken:(state:{token:string},action:{payload:string})=>{
-      state.token=action.payload;
+  reducers: {
+    setToken: (state, action: { payload: string }) => {
+      state.token = action.payload;
+    },
+    clearToken: (state) => {
+      state.token = '';
+      localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
     }
   }
-})
-//修改任务
-const modifyTask=createSlice({
+});
+
+const modifyTask = createSlice({
   name: 'modifyTask',
   initialState: {
     modifyTask: {
-      id:'',
+      id: '',
       event: '',
       description: '',
-      isCycle:false,
-      completed:false,
-      importanceLevel:0,
-      completed_Date:''
+      isCycle: false,
+      completed: false,
+      importanceLevel: 0,
+      completed_Date: ''
     }
   },
   reducers: {
-    // setTaskEvent: (state, action) => {
-    //   state.modifyTask.event = action.payload;
-    // },
-    // setTaskDescription: (state, action) => {
-    //   state.modifyTask.description = action.payload;
-    // }
-    modify:(state,action)=>{
-      state.modifyTask=action.payload;
+    modify: (state, action) => {
+      state.modifyTask = action.payload;
     }
   }
-})
+});
 
-
-//任务管理
+// 任务管理
 const taskSlice = createSlice({
   name: 'tasks',
   initialState,
   reducers: {
     addTask: (state, action) => {
       state.tasks.push(action.payload);
-      const token = localStorage.getItem('token');
-      if (token) {
-        const add = async () => {
-          try {
-            await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/add`,
-              JSON.stringify(action.payload),
-              { headers: { Authorization: `Bearer ${token}` } },
-            );
-            // Clear localStorage when logged in
-            localStorage.removeItem('tasks');
-          } catch (error) {
-            console.error('Failed to add task:', error);
-          }
+      if (!localStorage.getItem('token')) {
+        localStorage.setItem('tasks', JSON.stringify(state.tasks));
+      }
+    },
+
+    modify_Task: (state, action) => {
+      const index = state.tasks.findIndex(task => task.id === action.payload.id);
+      if (index !== -1) {
+        state.tasks[index] = {
+          ...state.tasks[index],
+          ...action.payload
         };
-        add();
+        if (!(localStorage.getItem('token') || sessionStorage.getItem('token'))) {
+          localStorage.setItem('tasks', JSON.stringify(state.tasks));
+        }
+      }
+    },
+
+    deleteTask: (state, action) => {
+      const index = state.tasks.findIndex(task => task.id === action.payload);
+      state.tasks.splice(index, 1);
+      const token = localStorage.getItem('token')||sessionStorage.getItem('token');
+      if (token) {
+        const deleteTask = async () => {
+          await axios.delete(
+            `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${action.payload}`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        };
+        deleteTask();
       } else {
         localStorage.setItem('tasks', JSON.stringify(state.tasks));
       }
     },
-    modify_Task:(state,action)=>{
-      const index=state.tasks.findIndex(task=>task.id===action.payload.id);
-      if(index!==-1){//判断是否找到
-      state.tasks[index].event=action.payload.event;
-      state.tasks[index].description=action.payload.description;
-      state.tasks[index].is_cycle=action.payload.is_cycle;
-      localStorage.setItem('tasks', JSON.stringify(state.tasks));
+
+    updateTask: (state, action) => {
+      const updatedTasks = action.payload.map((task: Task, index: number) => ({
+        ...task,
+        importanceLevel: index
+      }));
+      state.tasks = updatedTasks;
+      
+      if (!localStorage.getItem('token') && !sessionStorage.getItem('token')) {
+        localStorage.setItem('tasks', JSON.stringify(updatedTasks));
       }
     },
-    deleteTask:(state, action)=>{
-      const index=state.tasks.findIndex(task=>task.id===action.payload);
-        state.tasks.splice(index, 1);
-        const token=localStorage.getItem('token');
+
+    isCycle: (state, action) => {
+      const index = state.tasks.findIndex(task => task.id === action.payload);
+      if (index !== -1) {
+        state.tasks[index].is_cycle = !state.tasks[index].is_cycle;
+        const token = localStorage.getItem('token')||sessionStorage.getItem('token');
         if(token){
-          const deleteTask=async()=>{
-            await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/delete`,
-            JSON.stringify(action.payload),
-            {headers:{Authorization:`Bearer ${token}`}},
-          )
+          const modify = async () => {
+            try {
+              await axios.put(
+                `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${action.payload}`,
+                {
+                  event: state.tasks[index].event,
+                  description: state.tasks[index].description,
+                  is_cycle: state.tasks[index].is_cycle,
+                  importance_level: state.tasks[index].importanceLevel
+                },
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                }
+              );
+            } catch (error) {
+              console.error('Failed to update task cycle:', error);
+            }
           };
-          deleteTask();
-        }else{
+          modify();
+        } else {
           localStorage.setItem('tasks', JSON.stringify(state.tasks));
         }
+      }
     },
 
-    updateTask:(state, action)=>{//
-        state.tasks=action.payload;
-        const newTasks:Task[]=[]
-        for (let i=0;i<state.tasks.length;i++){
-          newTasks.push({
-            id:state.tasks[i].id,
-            event:state.tasks[i].event,
-            description:state.tasks[i].description,            
-            completed:state.tasks[i].completed,
-            is_cycle:state.tasks[i].is_cycle,
-            importanceLevel:i,//重新定义importanceLevel
-            completed_Date:state.tasks[i].completed_Date,
-          })
-        }
-        state.tasks=newTasks;
-        const token=localStorage.getItem('token');
-        if(token){
-          const updateTask=async()=>{
-            await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/updateImportanceLevel`,
-            JSON.stringify(state.tasks),
-            {headers:{Authorization:`Bearer ${token}`}},
-          )
-          };
-          updateTask();
-        }else{
-          localStorage.setItem('tasks', JSON.stringify(state.tasks));
-        }
-    },
-    isCycle:(state, action)=>{
-        // state.tasks[action.payload].is_cycle=!state.tasks[action.payload].is_cycle;
-        const index=state.tasks.findIndex(task=>task.id===action.payload);
-        state.tasks[index].is_cycle=!state.tasks[index].is_cycle;
-        localStorage.setItem('tasks', JSON.stringify(state.tasks));
-
-    },
     initialTasks: (state, action) => {
-      state.tasks = action.payload;
-      // Clear localStorage when getting tasks from backend
+      const newTasks: Task[] = action.payload.map((task: TaskResponse) => ({
+        id: String(task.ID),
+        event: task.event,
+        description: task.description,
+        completed: task.completed,
+        is_cycle: task.is_cycle,
+        importanceLevel: task.importance_level || 0,
+        completed_date: task.completed_date || '',
+      }));
+      state.tasks = newTasks;
       if (localStorage.getItem('token')) {
         localStorage.removeItem('tasks');
       }
     },
 
-    finishTask:(state, action)=>{
+    finishTask: (state, action) => {
       const date = new Date();
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      // state.tasks[action.payload].completed=true;
-      // state.tasks[action.payload].completed_Date=`${year}-${month}-${day}`;
-      const index=state.tasks.findIndex(task=>task.id===action.payload);
-      state.tasks[index].completed=true;
-      state.tasks[index].completed_Date=`${year}-${month}-${day}`;
-      const token=localStorage.getItem('token');
-      if(token){
-        const finish=async()=>{
-          await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/update`,
-            state.tasks,
-            {headers:{Authorization:`Bearer ${token}`}},
-          )
-        };
-        finish();
-      }else{
-      localStorage.setItem('tasks', JSON.stringify(state.tasks));
+      const formattedDate = date.toISOString();
+      
+      const index = state.tasks.findIndex(task => task.id === action.payload);
+      if (index !== -1) {
+        state.tasks[index].completed = true;
+        state.tasks[index].completed_date = formattedDate;
+        
+        const token = localStorage.getItem('token')||sessionStorage.getItem('token');
+        if(token){
+          const finish = async () => {
+            try {
+              await axios.put(
+                `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${action.payload}/complete`,
+                {},
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                }
+              );
+            } catch (error) {
+              console.error('Failed to complete task:', error);
+            }
+          };
+          finish();
+        } else {
+          localStorage.setItem('tasks', JSON.stringify(state.tasks));
+        }
+        message.success('🔥任务完成🔥');
       }
     },
-}
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(addTaskAsync.fulfilled, (state, action) => {
+        taskSlice.caseReducers.addTask(state, action);
+      })
+      .addCase(updateTaskImportanceAsync.fulfilled, (state, action) => {
+        state.tasks = action.payload;
+      })
+  }
 });
 
-
-//心愿管理
+// 心愿管理
 const wishSlice = createSlice({
   name: 'wishes',
   initialState: wishInitialState,
   reducers: {
     addWish: (state, action) => {
       state.wishes.push(action.payload);
-      const token = localStorage.getItem('token');
-      if (token) {
-        const add = async () => {
-          try {
-            await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish/add`,
-              JSON.stringify(action.payload),
-              { headers: { Authorization: `Bearer ${token}` } },
-            );
-            // Clear localStorage when logged in
-            localStorage.removeItem('wishes');
-          } catch (error) {
-            console.error('Failed to add wish:', error);
-          }
-        };
-        add();
+      if (localStorage.getItem('token') || sessionStorage.getItem('token')) {
+        localStorage.removeItem('wishes');
       } else {
         localStorage.setItem('wishes', JSON.stringify(state.wishes));
       }
     },
-  initialWishes: (state, action) => {
-    state.wishes = action.payload;
-    // Clear localStorage when getting wishes from backend
-    if (localStorage.getItem('token')) {
-      localStorage.removeItem('wishes');
-    }
-  },
-  deleteWish:(state, action)=>{
-    state.wishes.splice(action.payload, 1);
-    const token=localStorage.getItem('token');
-    if(token){
-      const deleteWish=async()=>{
-        axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish/delete`,
-          action.payload,
-          {headers:{Authorization:`Bearer ${token}`}},
-        )
-      };
-      deleteWish();
-    }else{
-      localStorage.setItem('wishes', JSON.stringify(state.wishes));
-    }
-  },
-  updateWishes:(state, action)=>{
-    state.wishes=action.payload;
-    const token=localStorage.getItem('token');
-    if(token){
-      const updateWish=async()=>{
-        axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish/update`,
-          action.payload,
-          {headers:{Authorization:`Bearer ${token}`}},
-        )
-      };
-      updateWish();
-    }else{
-      localStorage.setItem('wishes', JSON.stringify(state.wishes));
-    }
-  },
-  switchCycle:(state, action)=>{
-    state.wishes[action.payload].is_cycle=!state.wishes[action.payload].is_cycle;
-    const token=localStorage.getItem('token');
-    if(token){
-      const switchCycle=async()=>{
-        axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/todolist/wish/switchCycle`,
-          action.payload,
-          {headers:{Authorization:`Bearer ${token}`}},
-        )
-      };
-      switchCycle();
-    }else{
-      localStorage.setItem('wishes', JSON.stringify(state.wishes));
-    }
-  },
+    
+    initialWishes: (state, action) => {
+      state.wishes = action.payload;
+      if (localStorage.getItem('token')) {
+        localStorage.removeItem('wishes');
+      }
+    },
 
-}
+    deleteWish: (state, action) => {
+      const index = state.wishes.findIndex(wish => wish.id === action.payload);
+      if (index !== -1) {
+        state.wishes.splice(index, 1);
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (token) {
+          const deleteWish = async () => {
+            try {
+              await axios.delete(
+                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/${action.payload}`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                }
+              );
+            } catch (error) {
+              console.error('Failed to delete wish:', error);
+            }
+          };
+          deleteWish();
+        } else {
+          localStorage.setItem('wishes', JSON.stringify(state.wishes));
+        }
+      }
+    },
+
+    updateWishes: (state, action) => {
+      state.wishes = action.payload;
+      if(!localStorage.getItem('token') && !sessionStorage.getItem('token')){
+        localStorage.setItem('wishes', JSON.stringify(state.wishes));
+      }
+    },
+
+    switchCycle: (state, action) => {
+      const index = state.wishes.findIndex(wish => wish.id === action.payload);
+      if (index !== -1) {
+        state.wishes[index].is_cycle = !state.wishes[index].is_cycle;
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (token) {
+          const switchCycle = async () => {
+            try {
+              await axios.put(
+                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/${action.payload}`,
+                {
+                  event: state.wishes[index].event,
+                  description: state.wishes[index].description,
+                  is_cycle: state.wishes[index].is_cycle
+                },
+                {
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                  }
+                }
+              );
+            } catch (error) {
+              console.error('Failed to switch wish cycle:', error);
+            }
+          };
+          switchCycle();
+        } else {
+          localStorage.setItem('wishes', JSON.stringify(state.wishes));
+        }
+      }
+    }
+  }
 });
 
+// 配置 store
 const store = configureStore({
   reducer: {
     token: tokenSlice.reducer,
@@ -311,12 +416,18 @@ const store = configureStore({
     appearance: appearance.reducer,
     modifyTask: modifyTask.reducer,
   },
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware()
 });
 
-const { setAppearance } = appearance.actions;
-const { modify } = modifyTask.actions;
-const{ setToken } = tokenSlice.actions;
-const { addTask,modify_Task, deleteTask,updateTask,initialTasks,finishTask,isCycle } = taskSlice.actions;
-const {addWish,initialWishes,deleteWish,updateWishes,switchCycle} =wishSlice.actions;
-export { addTask,modify_Task, deleteTask,updateTask,initialTasks,finishTask,isCycle,addWish,initialWishes,deleteWish,updateWishes,setAppearance,switchCycle,modify,setToken };
+// 导出 actions
+export const { setAppearance } = appearance.actions;
+export const { modify } = modifyTask.actions;
+export const { setToken, clearToken } = tokenSlice.actions;
+export const { addTask, modify_Task, deleteTask, updateTask, initialTasks, finishTask, isCycle } = taskSlice.actions;
+export const { addWish, initialWishes, deleteWish, updateWishes, switchCycle } = wishSlice.actions;
+
+// 导出类型
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
 export default store;

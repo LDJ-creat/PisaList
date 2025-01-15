@@ -48,7 +48,7 @@
 
       
 }
-.CommunityWish-title{
+.CommunityWish-event{
     font-size: 25px;
     font-weight: 700;
     margin:3px 0px;
@@ -65,4 +65,16 @@
 .addCommunityWish-btn{
     background-image: url("../../images/AddIcon.svg");
     margin-left:14px;
+}
+.CommunityWish-title{
+    position: absolute;
+    right:50%;
+    top:16px;
+    transform: translateX(50%);
+    font-size: 20px;
+    font-weight: 700;
+    font-family: "PingFang SC";
+    font-style: normal;
+    line-height: normal;
+    width: 380px;
 }
