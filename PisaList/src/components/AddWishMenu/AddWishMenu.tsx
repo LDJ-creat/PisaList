@@ -26,8 +26,6 @@ const AddWish = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, 
         if (!value || value.trim() === '') return;
 
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-        if (!token) return;
-
         try {
             const newWish: Wish = {
                 id: Date.now().toString(),
@@ -38,6 +36,7 @@ const AddWish = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, 
             };
 
             // 创建心愿
+            if(token){
             const res = await axios.post(
                 `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes`,
                 {
@@ -52,9 +51,10 @@ const AddWish = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, 
                     }
                 }
             );
+        
 
             newWish.id = String(res.data.id);
-            console.log(newWish.id);
+        }
             dispatch(addWish(newWish));
 
             // 如果需要分享到社区

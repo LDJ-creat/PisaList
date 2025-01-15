@@ -328,6 +328,7 @@ const wishSlice = createSlice({
       } else {
         localStorage.setItem('wishes', JSON.stringify(state.wishes));
       }
+      message.success('🎉心愿添加成功🎉');
     },
     
     initialWishes: (state, action) => {
