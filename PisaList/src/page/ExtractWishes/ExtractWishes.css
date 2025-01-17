@@ -10,6 +10,8 @@
     background-image: url("../../images/背景垫图.png");
     background-repeat: repeat;
     position: relative;
+    min-height: 100vh;
+    overflow: hidden;
 }
 .myCard {
     background-color: transparent;
