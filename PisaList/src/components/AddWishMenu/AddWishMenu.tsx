@@ -4,7 +4,7 @@ import { useDispatch } from 'react-redux';
 import { addWish } from '../../redux/Store.tsx';
 import { setAppearance } from '../../redux/Store.tsx';
 import { message } from 'antd';
-import axios from 'axios';
+import axios from '../../utils/axios';
 
 interface Wish {
     id: string;
@@ -38,7 +38,7 @@ const AddWish = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, 
             // 创建心愿
             if(token){
             const res = await axios.post(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes`,
+                `/wishes`,
                 {
                     event: value,
                     description: description,
@@ -60,7 +60,7 @@ const AddWish = forwardRef<HTMLDivElement, { [key: string]: unknown }>((_props, 
             // 如果需要分享到社区
             if (isShared) {
                 await axios.post(
-                    `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/${newWish.id}/share`,
+                    `/wishes/${newWish.id}/share`,
                     {},
                     {
                         headers: {

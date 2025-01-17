@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { parseISO, format } from "date-fns";
 import { zhCN } from 'date-fns/locale';
 import Nav from "../../components/Nav/Nav";
-import axios from "axios";
+import axios from '../../utils/axios';
 // import { Timeline } from "antd";
 interface Task {
     id: string;
@@ -35,7 +35,7 @@ const PersonalReview = () => {
             const getFinishTasks = async () => {
                 try {
                     const res = await axios.get(
-                        `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/timeline`,
+                        `/tasks/timeline`,
                         { headers: { Authorization: `Bearer ${token}` } }
                     );
                     // 对获取的数据进行排序

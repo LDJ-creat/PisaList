@@ -1,5 +1,5 @@
 import "./WishCommunity.css"
-import axios from "axios";
+import axios from "../../utils/axios";
 import { useEffect, useState } from "react";
 import Nav from "../../components/Nav/Nav";
 import { addWish } from "../../redux/Store";
@@ -46,7 +46,7 @@ const WishCommunity = () => {
     const getCommunityWish = async() => {
         try {
             const response = await axios.get(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/community`
+                `/wishes/community`
             );
             const community_wishes: SharedWish[] = response.data;
             setCommunityWish(community_wishes);
@@ -74,7 +74,7 @@ const WishCommunity = () => {
          
 
             const res = await axios.post(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes`,
+                `/wishes`,
                 {
                     event: wish.event,
                     description: wish.description,

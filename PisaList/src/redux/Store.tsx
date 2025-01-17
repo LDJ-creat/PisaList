@@ -1,7 +1,8 @@
-import axios from 'axios';
+import axios from '../utils/axios';
 import { configureStore, createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { message } from 'antd';
 import type { Task } from '../types/Task';
+import { AxiosError } from 'axios';
 
 // 定义 Wish 接口
 interface Wish {
@@ -22,7 +23,7 @@ interface WishState {
 }
 
 // Helper function to check login status
-const isLoggedIn = () => !!localStorage.getItem('token');
+const isLoggedIn = () => !!localStorage.getItem('token')||!!sessionStorage.getItem('token');//两个!!表示强制转换为布尔值(true/false(NULL转为false))
 
 // 初始状态
 const initialState: TaskState = {
@@ -49,31 +50,38 @@ export const addTaskAsync = createAsyncThunk(
   'tasks/addTaskAsync',
   async (taskData: Task) => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      const res = await axios.post(
-        `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks`,
-        {
-          event: taskData.event,
-          description: taskData.description,
-          is_cycle: taskData.is_cycle,
-          importance_level: 0
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      );
-
+    
+    if (!token) {
+      // 如果未登录，直接返回任务数据用于本地存储
       return {
-        id: String(res.data.ID),
-        event: res.data.event,
-        completed: res.data.completed,
-        is_cycle: res.data.is_cycle,
-        description: res.data.description,
-        importanceLevel: res.data.importance_level,
-        completed_date: res.data.completed_date || '',
+        ...taskData,
+        id: String(Date.now()), // 生成一个临时的本地 ID
+        completed: false,
+        importanceLevel: 0,
+        completed_date: '',
       } as Task;
     }
-    return taskData;
+
+    // 如果已登录，发送请求到后端
+    const res = await axios.post(
+      '/tasks',
+      {
+        event: taskData.event,
+        description: taskData.description,
+        is_cycle: taskData.is_cycle,
+        importance_level: 0
+      }
+    );
+
+    return {
+      id: String(res.data.ID),
+      event: res.data.event,
+      completed: res.data.completed,
+      is_cycle: res.data.is_cycle,
+      description: res.data.description,
+      importanceLevel: res.data.importance_level,
+      completed_date: res.data.completed_date || '',
+    } as Task;
   }
 );
 
@@ -81,33 +89,39 @@ export const updateTaskImportanceAsync = createAsyncThunk(
   'tasks/updateTaskImportanceAsync',
   async (tasks: Task[]) => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (!token) {
-      return tasks;
-    }
-
     const updatedTasks = tasks.map((task, index) => ({
       ...task,
       importanceLevel: index
     }));
+    
+    if(!token) {
+      return updatedTasks;
+    }
 
-    await Promise.all(
-      updatedTasks.map(task =>
-        axios.put(
-          `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${task.id}/importance`,
-          {
-            importance_level: task.importanceLevel
-          },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
+    try {
+      await Promise.all(
+        updatedTasks.map(async task => {
+          try {
+            await axios.put(
+              `/tasks/${Number(task.id)}/importance`,
+              {
+                importance_level: task.importanceLevel
+              }
+            );
+          } catch (error: unknown) {
+            if (error instanceof AxiosError) {
+              console.error(`Failed to update task ${task.id}:`, error.response?.data || error);
             }
+            throw error;
           }
-        )
-      )
-    );
+        })
+      );
 
-    return updatedTasks;
+      return updatedTasks;
+    } catch (error) {
+      message.error('更新任务重要性失败');
+      throw error;
+    }
   }
 );
 
@@ -193,13 +207,7 @@ const taskSlice = createSlice({
       if (token) {
         const deleteTask = async () => {
           await axios.delete(
-            `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${action.payload}`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              }
-            }
+            `/tasks/${action.payload}`
           );
         };
         deleteTask();
@@ -209,14 +217,14 @@ const taskSlice = createSlice({
     },
 
     updateTask: (state, action) => {
-      const updatedTasks = action.payload.map((task: Task, index: number) => ({
-        ...task,
-        importanceLevel: index
-      }));
-      state.tasks = updatedTasks;
-      
+      // const updatedTasks = action.payload.map((task: Task, index: number) => ({
+      //   ...task,
+      //   importanceLevel: index
+      // }));
+      // state.tasks = updatedTasks;
+      state.tasks = action.payload;
       if (!localStorage.getItem('token') && !sessionStorage.getItem('token')) {
-        localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+        localStorage.setItem('tasks', JSON.stringify(state.tasks));
       }
     },
 
@@ -229,18 +237,12 @@ const taskSlice = createSlice({
           const modify = async () => {
             try {
               await axios.put(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${action.payload}`,
+                `/tasks/${action.payload}`,
                 {
                   event: state.tasks[index].event,
                   description: state.tasks[index].description,
                   is_cycle: state.tasks[index].is_cycle,
                   importance_level: state.tasks[index].importanceLevel
-                },
-                {
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                  }
                 }
               );
             } catch (error) {
@@ -284,14 +286,8 @@ const taskSlice = createSlice({
           const finish = async () => {
             try {
               await axios.put(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/${action.payload}/complete`,
-                {},
-                {
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                  }
-                }
+                `/tasks/${action.payload}/complete`,
+
               );
             } catch (error) {
               console.error('Failed to complete task:', error);
@@ -311,7 +307,8 @@ const taskSlice = createSlice({
         taskSlice.caseReducers.addTask(state, action);
       })
       .addCase(updateTaskImportanceAsync.fulfilled, (state, action) => {
-        state.tasks = action.payload;
+        // state.tasks = action.payload;
+        taskSlice.caseReducers.updateTask(state, action);
       })
   }
 });
@@ -347,7 +344,7 @@ const wishSlice = createSlice({
           const deleteWish = async () => {
             try {
               await axios.delete(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/${action.payload}`,
+                `/wishes/${action.payload}`,
                 {
                   headers: {
                     'Authorization': `Bearer ${token}`,
@@ -382,7 +379,7 @@ const wishSlice = createSlice({
           const switchCycle = async () => {
             try {
               await axios.put(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/${action.payload}`,
+                `/wishes/${action.payload}`,
                 {
                   event: state.wishes[index].event,
                   description: state.wishes[index].description,

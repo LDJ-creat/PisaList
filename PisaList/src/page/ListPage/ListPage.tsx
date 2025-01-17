@@ -1,15 +1,16 @@
 import "./ListPage.css";
 import { useState, useEffect,createRef } from "react";
 import { useDispatch, useSelector } from 'react-redux';
-import {  deleteTask, updateTask,finishTask ,isCycle, modify } from '../../redux/Store.tsx';
+import {  deleteTask, updateTaskImportanceAsync,finishTask ,isCycle, modify } from '../../redux/Store.tsx';
 import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
 import Nav from "../../components/Nav/Nav";
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
 import { Button } from "antd";
 import{EditOutlined, CheckOutlined } from '@ant-design/icons';
-import axios from "axios"
+import axios from '../../utils/axios';
 import { initialTasks } from "../../redux/Store.tsx"
+import { AppDispatch } from '../../redux/Store';
 
 
 interface Task {
@@ -57,7 +58,7 @@ const ListPage = () => {
   const modifyTask=useSelector((state:RootState3) => state.modifyTask.modifyTask)
     const [date,setDate] = useState("");
     const addRef = createRef<HTMLDivElement>();
-    const dispatch = useDispatch();
+    const dispatch = useDispatch<AppDispatch>();
     const tasks = useSelector((state: RootState) => state.tasks.tasks);
     const [filteredTasks, setFilteredTasks] = useState(tasks.filter((task:Task) => {
       if (!task.completed) return true;
@@ -81,19 +82,12 @@ const ListPage = () => {
        if (token && tasks.length === 0 && !hasTriedFetch) {
          const getData = async () => {
            try {
-             const resTasks = await axios.get(
-               `${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/today`,
-               {
-                 headers: {
-                   Authorization: `Bearer ${token}`
-                 }
-               }
-             );
+             const resTasks = await axios.get('/tasks/today');
              dispatch(initialTasks(resTasks.data));
+             setHasTriedFetch(true);
            } catch (error) {
              console.error('Error fetching data:', error);
            }
-           setHasTriedFetch(true);  // 标记已经尝试过获取数据
          };
          getData();
        }
@@ -141,7 +135,7 @@ const ListPage = () => {
     newTodos.splice(destinationIndexInTasks, 0, removedTodo); // 插入到新位置
 
     // Dispatch the updated order
-    dispatch(updateTask(newTodos)); // 更新Redux store
+    dispatch(updateTaskImportanceAsync(newTodos)); // 更新Redux store
 
 
         

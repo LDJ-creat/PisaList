@@ -8,7 +8,8 @@ import { useNavigate } from "react-router-dom"
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
 import {Drawer,Button,ConfigProvider} from "antd"
-import axios from "axios"
+import axios from "../../utils/axios"
+// import axios from "axios"
 import { initialTasks,clearToken} from "../../redux/Store.tsx"
 
 interface Task {
@@ -65,26 +66,45 @@ const HomePage=()=>{
     })
 
     //刷新页面时重新获取数据
+    const [hasTriedFetch,setHasTriedFetch]=useState(false);
     useEffect(()=>{
-        if(tasks.length===0){
-            const token=localStorage.getItem('token');
+        const token = localStorage.getItem('token')||sessionStorage.getItem('token');
+        if(tasks.length===0&&!hasTriedFetch&&token){
             const getData=async()=>{
-                if(token){
-                    try {
-                        const resTasks = await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/today`,{
-                            headers:{
-                                Authorization:`Bearer ${token}`
-                            }
-                        });
-                        dispatch(initialTasks(resTasks.data));
-                    } catch (error) {
-                        console.error('Error fetching data:', error);
-                    }
+                try {
+                    const resTasks = await axios.get('/tasks/today');
+                    dispatch(initialTasks(resTasks.data));
+                    setHasTriedFetch(true);
+                } catch (error) {
+                    console.error('Error fetching data:', error);
                 }
             };
             getData();
         }
-    }, [tasks,dispatch]);
+    }, [tasks,dispatch,hasTriedFetch]);
+    // const [hasTriedFetch,setHasTriedFetch]=useState(false);
+    // useEffect(()=>{
+    //     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    //     if(tasks.length===0&&!hasTriedFetch){
+    //         const getData=async()=>{
+    //             try {
+    //                 const resTasks = await axios.get('/tasks/today',
+    //                     {
+    //                         headers:{
+    //                             Authorization: `Bearer ${token}`,
+    //                             'Content-Type': 'application/json'
+    //                         }
+    //                     }
+    //                 );
+    //                 dispatch(initialTasks(resTasks.data));
+    //                 setHasTriedFetch(true);
+    //             } catch (error) {
+    //                 console.error('Error fetching data:', error);
+    //             }
+    //         };
+    //         getData();
+    //     }
+    // }, [tasks,dispatch,hasTriedFetch]);
 
     //添加监听器，当添加任务菜单显示时，点击菜单外任意处，菜单消失
     useEffect(()=>{
@@ -157,3 +177,4 @@ const HomePage=()=>{
 
 }
 export default HomePage;  
+

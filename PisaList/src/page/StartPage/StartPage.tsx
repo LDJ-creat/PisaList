@@ -2,7 +2,7 @@ import { useState,useEffect } from 'react'
 import { useNavigate } from "react-router-dom"
 import { useSpring, animated } from '@react-spring/web'
 import './StartPage.css'
-import axios from 'axios'
+import axios from '../../utils/axios'
 import { useDispatch } from "react-redux"
 import { initialTasks,initialWishes } from '../../redux/Store'
 
@@ -33,29 +33,21 @@ const StartPage=()=> {
     return () => clearTimeout(timer);
   }, [navigate]);
     useEffect(()=>{
-      const token=localStorage.getItem('token');
-      const getData=async()=>{
-        if(token){
-          try {
-            const resTasks=await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/tasks/today`,{
-              headers:{
-                Authorization:`Bearer ${token}`
-              }
-            });
-            const resWishes=await axios.get(`${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes`,{
-              headers:{
-                Authorization:`Bearer ${token}`
-              }
-            });
-            dispatch(initialTasks(resTasks.data));
-            dispatch(initialWishes(resWishes.data));
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
+      const token = localStorage.getItem('token')||sessionStorage.getItem('token');
+      if(token){
+      const getData = async () => {
+        try {
+          const resTasks = await axios.get('/tasks/today');
+          const resWishes = await axios.get('/wishes');
+          dispatch(initialTasks(resTasks.data));
+          dispatch(initialWishes(resWishes.data));
+        } catch (error) {
+          console.error('Failed to get data:', error);
         }
       };
       getData();
-    }, );
+    }
+    }, [dispatch]);
 
   return (
     <div className="startPage">

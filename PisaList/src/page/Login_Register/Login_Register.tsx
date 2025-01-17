@@ -3,14 +3,11 @@ import { Button, Checkbox, Form, Input, message } from 'antd';
 import './Login_Register.css';
 import Nav from '../../components/Nav/Nav';
 import { useState } from 'react';
-import axios from 'axios';
+import axios from '../../utils/axios';
+import { AxiosError } from 'axios';
 import { setToken, initialTasks, initialWishes } from '../../redux/Store.tsx';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-
-// 设置 axios 默认配置
-axios.defaults.headers.post['Content-Type'] = 'application/json';
-axios.defaults.headers.common['Content-Type'] = 'application/json';
 
 type FieldType = {
   username?: string;
@@ -31,8 +28,6 @@ const Login_Register: React.FC = () => {
 
   const initialize = () => {
     const initialization = async () => {
-      const baseURL = import.meta.env.VITE_REACT_APP_BASE_URL;
-      
       try {
         // 在发送请求前验证必填字段
         if (isRegister) {
@@ -42,11 +37,11 @@ const Login_Register: React.FC = () => {
           }
 
           const res = await axios.post(
-            `${baseURL}/register`,
+            '/register',
             {
-              Username: username,
-              Password: password,
-              Email: email
+              username: username,
+              password: password,
+              email: email
             }
           );
 
@@ -55,39 +50,41 @@ const Login_Register: React.FC = () => {
             return;
           }
 
-          setToken(res.data.token);
-          if (remember) {
-            localStorage.setItem('token', res.data.token);
+          // 先存储token
+          const token = res.data.token;
+          if (token) {
+            if (remember) {
+              localStorage.setItem('token', token);
+            } else {
+              sessionStorage.setItem('token', token);
+            }
+            dispatch(setToken(token));
+            console.log('Token stored:', token);
+
+            // 添加一个小延时确保token被正确设置
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            try {
+              // 获取今日任务和用户心愿
+              const resTasks = await axios.get('/tasks/today');
+              dispatch(initialTasks(resTasks.data));
+              
+              const resWishes = await axios.get('/wishes');
+              dispatch(initialWishes(resWishes.data));
+              
+              message.success("注册成功");
+              navigate('/home');
+            } catch (error) {
+              console.error('Failed to fetch initial data:', error);
+              message.error('获取初始数据失败');
+            }
           } else {
-            sessionStorage.setItem('token', res.data.token);
+            message.error('服务器返回的token无效');
+            return;
           }
-
-          // 获取今日任务和用户心愿
-          const resTasks = await axios.get(
-            `${baseURL}/tasks/today`,
-            {
-              headers: {
-                'Authorization': `Bearer ${res.data.token}`
-              }
-            }
-          );
-
-          const resWishes = await axios.get(
-            `${baseURL}/wishes`,
-            {
-              headers: {
-                'Authorization': `Bearer ${res.data.token}`
-              }
-            }
-          );
-
-          dispatch(initialTasks(resTasks.data));
-          dispatch(initialWishes(resWishes.data));
-          message.success("注册成功");
-          navigate('/home');
         } else {
           const res = await axios.post(
-            `${baseURL}/login`,
+            '/login',
             {
               username,
               password
@@ -99,59 +96,53 @@ const Login_Register: React.FC = () => {
             return;
           }
 
-          setToken(res.data.token);
-          if (remember) {
-            localStorage.setItem('token', res.data.token);
+          const token = res.data.token;
+          if (token) {
+            if (remember) {
+              localStorage.setItem('token', token);
+              console.log('Token stored in localStorage:', token);
+            } else {
+              sessionStorage.setItem('token', token);
+              console.log('Token stored in sessionStorage:', token);
+            }
+            dispatch(setToken(token));
+
+            // 添加一个小延时确保token被正确设置
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            try {
+              // 获取今日任务和用户心愿
+              const resTasks = await axios.get('/tasks/today');
+              dispatch(initialTasks(resTasks.data));
+              
+              const resWishes = await axios.get('/wishes');
+              dispatch(initialWishes(resWishes.data));
+              
+              message.success("登录成功");
+              navigate('/home');
+            } catch (error) {
+              console.error('Failed to fetch initial data:', error);
+              message.error('获取初始数据失败');
+            }
           } else {
-            sessionStorage.setItem('token', res.data.token);
+            message.error('服务器返回的token无效');
+            return;
           }
-
-          // 获取今日任务和用户心愿
-          const resTasks = await axios.get(
-            `${baseURL}/tasks/today`,
-            {
-              headers: {
-                'Authorization': `Bearer ${res.data.token}`
-              }
-            }
-          );
-
-
-          const resWishes = await axios.get(
-            `${baseURL}/wishes`,
-            {
-              headers: {
-                'Authorization': `Bearer ${res.data.token}`
-              }
-            }
-          );
-
-          dispatch(initialTasks(resTasks.data));
-          dispatch(initialWishes(resWishes.data));
-          message.success("登录成功");
-          navigate('/home');
         }
 
         localStorage.removeItem('tasks');
       } catch (error) {
-        if (axios.isAxiosError(error)) {
+        if (error instanceof AxiosError) {
           const errorMessage = error.response?.data?.error || '操作失败，请重试';
           message.error(errorMessage);
           console.error('Error details:', error.response?.data);
         }
         console.error('Failed:', error);
-        return; // 出错时提前返回，不清空表单
+        return;
       }
     };
 
     initialization();
-    // 只有在成功后才清空表单
-    // setUsername('');
-    // setEmail('');
-    // setPassword('');
-    // setPassword2('');
-    // setIsRegister(false);
-    // setRemember(true);
   };
 
   return (

@@ -6,7 +6,7 @@ import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello
 import Nav from "../../components/Nav/Nav";
 import AddWishMenu from "../../components/AddWishMenu/AddWishMenu.tsx";
 import{message} from "antd";
-import axios from "axios";
+import axios from '../../utils/axios';
 import { Button } from "antd";
 import {LogoutOutlined,PlusOutlined} from '@ant-design/icons';
 import { AppDispatch } from '../../redux/Store';
@@ -67,28 +67,26 @@ const MyWishList = () => {
         dispatch(deleteWish(id));
         message.success("删除成功");
     }
-    const shareWish = async (id: string) => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      try {
-        const res = await axios.post(
-          `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/${id}/share`,
-          {},  // 空对象作为请求体
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-        if (res.status === 200) {
-          message.success("分享成功");
+    const handleShare = async (id: string) => {
+        try {
+            await axios.post(`/wishes/${id}/share`);
+            message.success('分享成功');
+        } catch (error) {
+            message.error('分享失败');
+            console.error('Share error:', error);
         }
-      } catch (error) {
-        message.error("分享失败");
-        console.error('Share wish error:', error);
-      }
     };
-    
+
+    // const getWishes = async () => {
+    //     try {
+    //         const response = await axios.get('/wishes');
+    //         dispatch(initialWishes(response.data));
+    //     } catch (error) {
+    //         console.error('Failed to get wishes:', error);
+    //         message.error('获取心愿列表失败');
+    //     }
+    // };
+    //刷新页面时重新获取数据
     const [hasTriedFetch, setHasTriedFetch] = useState(false);
 
     useEffect(() => {
@@ -98,7 +96,7 @@ const MyWishList = () => {
         const getData = async () => {
           try {
             const resWishes = await axios.get(
-              `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes`,
+              `/wishes`,
               {
                 headers: {
                   Authorization: `Bearer ${token}`
@@ -176,7 +174,7 @@ const MyWishList = () => {
           {/* {wishes[index].is_cycle ? <button className="cycle-time" onClick={()=>{dispatch(switchCycle(index))}}>循环</button> : <button className="limited-time" onClick={()=>dispatch(switchCycle(index))}>限时</button>} */}
           <button className="limited-time" onClick={()=>dispatch(switchCycle(wish.id))}>{wish.is_cycle ? "循环" : "限时"}</button>
           <Button shape="circle" icon={<PlusOutlined/>} className="WishTask" onClick={()=>handleWishTask(wish.id)}></Button>
-          <Button shape="circle" icon={<LogoutOutlined/>} className="shareWish" onClick={()=>shareWish(wish.id)}></Button>
+          <Button shape="circle" icon={<LogoutOutlined/>} className="shareWish" onClick={()=>handleShare(wish.id)}></Button>
           <p className='wishListName'>{wish.event}</p>
           <p className='wish-description'>{wish.description}</p>
         </div>

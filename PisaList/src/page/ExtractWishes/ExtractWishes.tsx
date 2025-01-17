@@ -1,6 +1,6 @@
 import {useEffect, useRef,useState } from "react";
 import "./ExtractWishes.css"
-import axios from "axios";
+import axios from "../../utils/axios";
 import Nav from "../../components/Nav/Nav";
 import { useDispatch} from "react-redux";
 import { addWish } from "../../redux/Store.tsx";
@@ -25,7 +25,7 @@ const ExtractWishes = () => {
     const getRandomWish=async()=>{
         try {
             const res = await axios.get(
-                `${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes/random`
+                `/wishes/random`
             );
             setRandomWish(res.data);
         } catch (error) {
@@ -63,7 +63,7 @@ const ExtractWishes = () => {
         }
         if (token) {
             try {
-                const res = await axios.post(`${import.meta.env.VITE_REACT_APP_BASE_URL}/wishes`,
+                const res = await axios.post(`/wishes`,
                     {
                         event:randomWish?.event,
                         description:randomWish?.description,

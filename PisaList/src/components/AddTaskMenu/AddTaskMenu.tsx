@@ -3,7 +3,8 @@ import './AddTaskMenu.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { modify_Task, addTaskAsync} from '../../redux/Store.tsx';
 import { setAppearance } from "../../redux/Store.tsx";
-import axios from 'axios';
+import axios from '../../utils/axios';
+import { AxiosError } from 'axios';
 import { message } from 'antd';
 import { AppDispatch } from '../../redux/Store';
 
@@ -54,8 +55,6 @@ const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown, taskId?: st
 
         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-        const baseURL = import.meta.env.VITE_REACT_APP_BASE_URL;
-
         try {
             if (taskId && typeof taskId === 'string') {
                 // 修改任务
@@ -71,7 +70,7 @@ const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown, taskId?: st
                 };
                 if(token){
                 await axios.put(
-                    `${baseURL}/tasks/${modifyTask.id}`,
+                    `/tasks/${modifyTask.id}`,
                     {
                         event: value,
                         description: description,
@@ -108,7 +107,7 @@ const AddTask = forwardRef<HTMLDivElement, { [key: string]: unknown, taskId?: st
             setDescription('');
             setIsCycle(false);
         } catch (error) {
-            if (axios.isAxiosError(error)) {
+            if (error instanceof AxiosError) {
                 const errorMessage = error.response?.data?.error || '操作失败，请重试';
                 message.error(errorMessage);
                 console.error('Error details:', error.response?.data);
