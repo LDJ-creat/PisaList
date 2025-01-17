@@ -99,27 +99,21 @@ export const updateTaskImportanceAsync = createAsyncThunk(
     }
 
     try {
-      await Promise.all(
-        updatedTasks.map(async task => {
-          try {
-            await axios.put(
-              `/tasks/${Number(task.id)}/importance`,
-              {
-                importance_level: task.importanceLevel
-              }
-            );
-          } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-              console.error(`Failed to update task ${task.id}:`, error.response?.data || error);
-            }
-            throw error;
-          }
-        })
+      await axios.put(
+        '/tasks/importance',
+        {
+          tasks: updatedTasks.map(task => ({
+            id: Number(task.id),
+            importance_level: task.importanceLevel
+          }))
+        }
       );
-
       return updatedTasks;
-    } catch (error) {
-      message.error('更新任务重要性失败');
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        console.error('Failed to update tasks importance:', error.response?.data || error);
+        message.error('更新任务重要性失败');
+      }
       throw error;
     }
   }
