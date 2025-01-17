@@ -59,10 +59,11 @@ const HomePage=()=>{
     },[])
     //过滤获取今天完成的任务
     const todayFinish=tasks.filter((task:Task)=>{
-        if(task.completed){
+        if(task.completed && task.completed_date && task.completed_date !== 'null'){
             const taskDate=task.completed_date.split('T')[0];
             return taskDate==date;
         }
+        return false;
     })
 
     //刷新页面时重新获取数据
