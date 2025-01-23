@@ -54,8 +54,8 @@ const PersonalReview = () => {
         }
         if(!token&&!hasTriedFetch){
             const sortedData = [...tasks].sort((a: Task, b: Task) => {
-                const dateA = a.completed_date ? parseISO(a.completed_date) : new Date(0);
-                const dateB = b.completed_date ? parseISO(b.completed_date) : new Date(0);
+                const dateA = a.completed_date && a.completed_date !== 'null' ? parseISO(a.completed_date) : new Date(0);
+                const dateB = b.completed_date && b.completed_date !== 'null' ? parseISO(b.completed_date) : new Date(0);
                 return dateB.getTime() - dateA.getTime();
             });
             setFinishTasks(sortedData);
@@ -67,7 +67,7 @@ const PersonalReview = () => {
             <p id="personal-review-title">{finishTasks.length? "--------------------------------------Time Line------------------------------------":"------------------------------------暂未有任何任务完成喔------------------------------------"}</p>
             <div className="personal-review">
                 {finishTasks.map((task:Task,index:number)=>{
-                    const formattedDate = task.completed_date ? 
+                    const formattedDate = task.completed_date && task.completed_date !== 'null' ? 
                         format(parseISO(task.completed_date), 'yyyy年MM月dd日 HH:mm:ss', { locale: zhCN }) 
                         : '';
                     return(
