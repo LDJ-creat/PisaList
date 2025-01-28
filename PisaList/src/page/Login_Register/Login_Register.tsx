@@ -37,7 +37,7 @@ const Login_Register: React.FC = () => {
           }
 
           const res = await axios.post(
-            '/register',
+            '/register/',
             {
               username: username,
               password: password,
@@ -66,10 +66,10 @@ const Login_Register: React.FC = () => {
 
             try {
               // 获取今日任务和用户心愿
-              const resTasks = await axios.get('/tasks/today');
+              const resTasks = await axios.get('/tasks/today/');
               dispatch(initialTasks(resTasks.data));
               
-              const resWishes = await axios.get('/wishes');
+              const resWishes = await axios.get('/wishes/');
               dispatch(initialWishes(resWishes.data));
               
               message.success("注册成功");
@@ -84,7 +84,7 @@ const Login_Register: React.FC = () => {
           }
         } else {
           const res = await axios.post(
-            '/login',
+            '/login/',
             {
               username,
               password
@@ -112,10 +112,10 @@ const Login_Register: React.FC = () => {
 
             try {
               // 获取今日任务和用户心愿
-              const resTasks = await axios.get('/tasks/today');
+              const resTasks = await axios.get('/tasks/today/');
               dispatch(initialTasks(resTasks.data));
               
-              const resWishes = await axios.get('/wishes');
+              const resWishes = await axios.get('/wishes/');
               dispatch(initialWishes(resWishes.data));
               
               message.success("登录成功");
