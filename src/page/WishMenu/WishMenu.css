@@ -1,0 +1,69 @@
+.WishMenu-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;   
+    width: 100vw;
+    height: 100vh;
+    position:relative;
+    background-color:#FFBB8E ;
+    background-image: url("../../images/背景垫图.png");
+    background-repeat: repeat;
+}
+
+#languageBtn{
+    border-radius: 31px;
+    border: 3px solid rgba(173, 97, 5, 0.6);
+    background: #FFF0CE;
+    width: 94px;
+    height: 49px;
+    flex-shrink: 0;
+    position:relative;
+    top: 0vh;
+    left: -35vw;
+
+}
+
+.wishMenuBTNS{
+   width: 330px;
+   height: 600px;
+   display:flex;
+   flex-direction: column;
+   justify-content: center;
+   align-items: center;
+   margin-bottom: 94px;
+}
+
+.wishMenuBtn{
+    border-radius: 31px;
+    border: 3px solid rgba(200, 109, 1, 0.60);
+    background: #FFF0CE;
+    width: 294px;
+    height: 53.426px;
+    flex-shrink: 0;
+ }
+.wishMenuChoice{
+    position: relative;
+    width: 300px;
+    height: 55px;
+    margin:6px 0px;
+}
+
+ .WishIconImg, .ArrowImg{
+    position:absolute;
+    /* width: 60px;
+    height: 60px; */
+}
+
+.WishIconImg{
+    left:-6%;
+    top:-14%;
+    width: 62px;
+    height: 62px;
+}
+.ArrowImg{
+    left:74%;
+    top:14%;
+    width: 40px;
+    height: 40px;
+}

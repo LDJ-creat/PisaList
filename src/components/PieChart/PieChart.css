@@ -1,0 +1,17 @@
+.PieChart{
+    position:absolute;
+    top:31.5vh;
+    left:50vw;
+    transform:translate(-50%,-50%);
+    width: 249px;
+    height: 249px;
+}
+
+@media screen and (max-width: 480px){
+    .PieChart{
+        width: 257px;
+        height: 257px;
+    }
+    
+}
+
