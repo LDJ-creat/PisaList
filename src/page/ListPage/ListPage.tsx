@@ -2,7 +2,7 @@ import "./ListPage.css";
 import { useState, useEffect,createRef } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 import {  deleteTask, updateTaskImportanceAsync,finishTask ,isCycle, modify } from '../../redux/Store.tsx';
-import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable, Droppable, DroppableProvided,DraggableProvided } from "@hello-pangea/dnd";
 import Nav from "../../components/Nav/Nav";
 import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
@@ -212,7 +212,7 @@ const ListPage = () => {
               <div className="task-list" ref={provided.innerRef} {...provided.droppableProps}>
           {filteredTasks.map((task:Task, index:number) => (
 <Draggable index={index} key={task.id} draggableId={task.id}> 
-  {(provided) => {
+  {(provided:DraggableProvided) => {
 
 
   return (
