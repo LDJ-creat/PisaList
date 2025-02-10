@@ -9,7 +9,7 @@ import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
 import {Drawer,Button,ConfigProvider} from "antd"
 import axios from "../../utils/axios"
-// import axios from "axios"
+import {message} from "antd"
 import { initialTasks,clearToken} from "../../redux/Store.tsx"
 
 interface Task {
@@ -122,6 +122,11 @@ const HomePage=()=>{
       },[appear,addRef,dispatch])
 
       const handleLogout=()=>{
+        const token=localStorage.getItem('token')||sessionStorage.getItem('token');
+        if(!token){
+            message.error('请先登录');
+            return;
+        }
         dispatch(clearToken());
         navigate("/Login_Register");
         //刷新页面

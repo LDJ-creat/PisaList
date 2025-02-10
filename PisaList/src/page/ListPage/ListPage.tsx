@@ -11,6 +11,7 @@ import{EditOutlined, CheckOutlined } from '@ant-design/icons';
 import axios from '../../utils/axios';
 import { initialTasks } from "../../redux/Store.tsx"
 import { AppDispatch } from '../../redux/Store';
+import confetti from 'canvas-confetti';
 
 
 interface Task {
@@ -110,8 +111,13 @@ const ListPage = () => {
 
     
     const handleFinish=(taskId:string)=>{
-
+        
         dispatch(finishTask(taskId));
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y:0.6},
+        });
   }
 
   const onDragEnd = (result: DragResult) => {

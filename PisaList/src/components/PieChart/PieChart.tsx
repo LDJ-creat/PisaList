@@ -49,20 +49,6 @@ const PieChart: React.FC = () => {
     return false;
   });
 
-// useEffect(() => {
-//   setFilteredTasks(
-//     tasks.filter((task:Task) => {
-//       if (!task.completed) return true;
-      
-//       if (task.is_cycle) {
-//         const taskDate = task.completed_date.split('T')[0];
-//         return taskDate != date;
-//       }
-      
-//       return false;
-//     })
-//   );
-// }, [tasks, date]);  // 添加依赖项
 
 
   useEffect(() => {
@@ -82,7 +68,7 @@ const PieChart: React.FC = () => {
     setTaskLabel([]);
     setChartData([]);
   }
-  }, [tasks,filteredTasks]);
+  }, [tasks,date]);
 
 
    const data={
@@ -125,7 +111,7 @@ const PieChart: React.FC = () => {
   return (
     <div className='PieChart'>
       <Pie data={data}  options={options} />
-     </div>
+    </div>
   );
 };
 

@@ -8,6 +8,7 @@ import ExtractWishes from "../page/ExtractWishes/ExtractWishes.tsx";
 import WishCommunity from "../page/WishCommunity/WishCommunity.tsx";
 import PersonalReview from "../page/PersonalReview/PersonalReview.tsx";
 import Login_Register from "../page/Login_Register/Login_Register.tsx";
+import PieChart from "../components/PieChart/PieChart.tsx";
 const router=createBrowserRouter([
 {
     path:"/",
@@ -44,7 +45,12 @@ const router=createBrowserRouter([
 {
     path:"Login_Register",
     element:<Login_Register/>
+},
+{
+    path:"/pieChart",
+    element:<PieChart/>
 }
+
 
 ])
 export default router;
