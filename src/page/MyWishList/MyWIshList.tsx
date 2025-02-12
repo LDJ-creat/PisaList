@@ -2,7 +2,7 @@ import "./MyWishList.css"
 import { useState, useEffect,createRef} from "react";
 import { useDispatch, useSelector} from 'react-redux';
 import {addTaskAsync,deleteWish,setAppearance,updateWishes,switchCycle,initialWishes} from '../../redux/Store.tsx';
-import { DragDropContext, Draggable, Droppable, DroppableProvided } from "@hello-pangea/dnd";
+import { DragDropContext, Draggable, Droppable, DroppableProvided,DraggableProvided } from "@hello-pangea/dnd";
 import Nav from "../../components/Nav/Nav";
 import AddWishMenu from "../../components/AddWishMenu/AddWishMenu.tsx";
 import{message} from "antd";
@@ -167,7 +167,7 @@ const MyWishList = () => {
   
          {wishes.map((wish:Wish, index:number) => (
 <Draggable index={index} key={index} draggableId={`todo-${index}`}>
-  {(provided) => {
+  {(provided:DraggableProvided) => {
     return  (
       <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
         <div className='MyWish' onDoubleClick={()=>handleDelete(wish.id)}>

@@ -18,11 +18,31 @@ jobs:
         with:
           node-version: 20.x
 
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
-        run: npm install
+        run: pnpm install
 
       - name: Build project
-        run: npm run build
+        run: pnpm run build
+        env:
+          CI: true
 
       - name: Deploy dist files to server
         uses: appleboy/ssh-action@master
@@ -31,13 +51,11 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.PASSWORD }}
           script: |
-
-            # 创建或清空服务器上的目标目录
             mkdir -p /www/wwwroot/dist
             rm -rf /www/wwwroot/dist/*
+
       - name: Copy dist files to server
         uses: appleboy/scp-action@master
-
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
