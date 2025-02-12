@@ -50,7 +50,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          key_passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             mkdir -p /www/wwwroot/dist
             rm -rf /www/wwwroot/dist/*
@@ -61,6 +61,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          key_passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "dist/*"
           target: "/www/wwwroot/dist"
