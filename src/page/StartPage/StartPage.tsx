@@ -5,6 +5,7 @@ import './StartPage.css'
 import axios from '../../utils/axios'
 import { useDispatch } from "react-redux"
 import { initialTasks,initialWishes } from '../../redux/Store'
+import { message } from 'antd'
 
 const AnimFeTurbulence = animated('feTurbulence')
 const AnimFeDisplacementMap = animated('feDisplacementMap')
@@ -12,6 +13,7 @@ const AnimFeDisplacementMap = animated('feDisplacementMap')
 const StartPage=()=> {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
   const [open, toggle] = useState(false)
   const [{ freq, factor, scale, opacity }] = useSpring(
     () => ({
@@ -26,12 +28,16 @@ const StartPage=()=> {
     useEffect(() => {
     // 设置定时器，3秒后执行跳转函数
     const timer = setTimeout(() => {
-      navigate('/Home');
+      if(!loading){
+        navigate('/Home');
+      }
+      
     }, 3000);
-
     // 在组件卸载时清除定时器，避免内存泄漏
     return () => clearTimeout(timer);
-  }, [navigate]);
+  }, [navigate,loading]);
+
+
     useEffect(()=>{
       const token = localStorage.getItem('token')||sessionStorage.getItem('token');
       if(token){
@@ -43,10 +49,14 @@ const StartPage=()=> {
           dispatch(initialWishes(resWishes.data));
         } catch (error) {
           console.error('Failed to get data:', error);
+          message.error("Fail to get data")
+        } finally {
+          setLoading(false); 
         }
       };
       getData();
     }
+    setLoading(false)
     }, [dispatch]);
 
   return (

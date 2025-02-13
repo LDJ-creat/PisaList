@@ -1,16 +1,15 @@
 import "./HomePage.css"
 import Pisa from "../../images/披萨主图.svg"
 import { useSelector,useDispatch } from "react-redux"
-import { useEffect,useState,createRef} from "react"
+import { useEffect,useState,createRef, Suspense, lazy } from "react"
 import Nav from "../../components/Nav/Nav.tsx"
-import PieChart from "../../components/PieChart/PieChart.tsx"
 import { useNavigate } from "react-router-dom"
-import AddTaskMenu from "../../components/AddTaskMenu/AddTaskMenu.tsx";
 import { setAppearance } from "../../redux/Store.tsx"
-import {Drawer,Button,ConfigProvider} from "antd"
+import {Drawer,Button,ConfigProvider, Spin} from "antd"
 import axios from "../../utils/axios"
 import {message} from "antd"
 import { initialTasks,clearToken} from "../../redux/Store.tsx"
+import { Skeleton } from 'antd';
 
 interface Task {
     id: string;
@@ -31,6 +30,11 @@ interface RootState2{
         appear:boolean;
     };
 }
+
+// 懒加载组件
+const PieChart = lazy(() => import('../../components/PieChart/PieChart.tsx'));
+const AddTaskMenu = lazy(() => import('../../components/AddTaskMenu/AddTaskMenu.tsx'));
+
 const HomePage=()=>{
     const tasks = useSelector((state:RootState) => state.tasks.tasks);
     const appear=useSelector((state:RootState2)=>state.appearance.appear);
@@ -39,6 +43,8 @@ const HomePage=()=>{
     const addRef = createRef<HTMLDivElement>();
     const [date,setDate] = useState("");
     const [settingMenu,setSettingMenu]=useState(false);
+    const [loading, setLoading] = useState(true);
+    // const [dataLoaded, setDataLoaded] = useState(false);
 
     const openSettingMenu=()=>{
         setSettingMenu(true);
@@ -69,44 +75,27 @@ const HomePage=()=>{
     //刷新页面时重新获取数据
     const [hasTriedFetch,setHasTriedFetch]=useState(false);
     useEffect(()=>{
-        const token = localStorage.getItem('token')||sessionStorage.getItem('token');
-        if(tasks.length===0&&!hasTriedFetch&&token){
-            const getData=async()=>{
-                try {
-                    const resTasks = await axios.get('/tasks/today');
-                    dispatch(initialTasks(resTasks.data));
-                    setHasTriedFetch(true);
-                } catch (error) {
-                    console.error('Error fetching data:', error);
+        const loadData = async () => {
+            // setLoading(true);
+            try {
+                if (tasks.length === 0 && !hasTriedFetch) {
+                    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                    if (token) {
+                        const resTasks = await axios.get('/tasks/today');
+                        dispatch(initialTasks(resTasks.data));
+                        setHasTriedFetch(true);
+                    }
                 }
-            };
-            getData();
-        }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        loadData();
     }, [tasks,dispatch,hasTriedFetch]);
-    // const [hasTriedFetch,setHasTriedFetch]=useState(false);
-    // useEffect(()=>{
-    //     const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    //     if(tasks.length===0&&!hasTriedFetch){
-    //         const getData=async()=>{
-    //             try {
-    //                 const resTasks = await axios.get('/tasks/today',
-    //                     {
-    //                         headers:{
-    //                             Authorization: `Bearer ${token}`,
-    //                             'Content-Type': 'application/json'
-    //                         }
-    //                     }
-    //                 );
-    //                 dispatch(initialTasks(resTasks.data));
-    //                 setHasTriedFetch(true);
-    //             } catch (error) {
-    //                 console.error('Error fetching data:', error);
-    //             }
-    //         };
-    //         getData();
-    //     }
-    // }, [tasks,dispatch,hasTriedFetch]);
-
+    
     //添加监听器，当添加任务菜单显示时，点击菜单外任意处，菜单消失
     useEffect(()=>{
         const handleClickOutside=(event: MouseEvent)=>{
@@ -132,6 +121,46 @@ const HomePage=()=>{
         //刷新页面
         window.location.reload();
       }
+
+    // useEffect(() => {
+    //     const loadInitialData = async () => {
+    //         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+    //         if (!dataLoaded && token) {
+    //             try {
+    //                 const [tasksRes] = await Promise.all([
+    //                     axios.get('/tasks/today'),
+    //                     // 可以添加其他并行请求
+    //                 ]);
+                    
+    //                 dispatch(initialTasks(tasksRes.data));
+    //                 setDataLoaded(true);
+    //             } catch (error) {
+    //                 console.error('Error loading initial data:', error);
+    //                 message.error('加载数据失败，请刷新重试');
+    //             }
+    //         }
+    //     };
+
+    //     loadInitialData();
+    // }, [dataLoaded, dispatch]);
+
+    if (loading) {
+        return (
+            <div className="HomePage-container">
+                <Skeleton.Image active className="main-image-skeleton" />
+                <div className="finish-content">
+                    <Skeleton active paragraph={{ rows: 4 }} />
+                </div>
+                <Skeleton.Button active className="Setting-Icon" />
+                <Skeleton.Button active className="addTask" />
+                <div className="chart-skeleton">
+                    <Skeleton.Image active />
+                </div>
+                <Nav />
+            </div>
+        );
+    }
+
     return(
         <div className="HomePage-container">
             <img src={Pisa} alt="" className={`${appear?"blur":""}`}/>
@@ -175,8 +204,14 @@ const HomePage=()=>{
                 <button className="Self-Setting" onClick={()=>navigate("/selfSetting")}>个人中心</button>
             </div>} */}
             <button className="addTask Bgi" onClick={()=>dispatch(setAppearance())}></button>
-            <PieChart/>
-            {appear&&<AddTaskMenu ref={addRef}/>}
+            <Suspense fallback={<Spin className="chart-loading" />}>
+                <PieChart/>
+            </Suspense>
+            {appear&&(
+                <Suspense fallback={<Spin className="menu-loading" />}>
+                    <AddTaskMenu ref={addRef}/>
+                </Suspense>
+            )}
             <Nav/>  
         </div>
     )
