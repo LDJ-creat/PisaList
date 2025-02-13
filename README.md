@@ -12,10 +12,6 @@
 ┣ 📂src
 ┃ ┣ 📂assets
 ┃ ┃ ┗ 📜react.svg
-┃ ┣ 📂component
-┃ ┃ ┗ 📂PieChart
-┃ ┃   ┗ 📂PieChart
-┃ ┃     ┗ 📜PieChart.tsx
 ┃ ┣ 📂components
 ┃ ┃ ┣ 📂AddTaskMenu
 ┃ ┃ ┃ ┣ 📜AddTaskMenu.css

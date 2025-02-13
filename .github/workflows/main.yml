@@ -52,8 +52,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            mkdir -p /www/wwwroot/dist
-            rm -rf /www/wwwroot/dist/*
+            sudo mkdir -p /www/wwwroot/dist
+            sudo rm -rf /www/wwwroot/dist/*
+            sudo chown -R ${{ secrets.USERNAME }}:${{ secrets.USERNAME }} /www/wwwroot/dist
+            sudo chmod -R 755 /www/wwwroot/dist
 
       - name: Copy dist files to server
         uses: appleboy/scp-action@master
