@@ -58,7 +58,7 @@ const PieChart: React.FC = () => {
     const a1=100/(Math.pow(1.6,tasks.length)-1)
     const tempLabel:string[]=filteredTasks.map((task:Task)=>task.event);
 
-    for (let i = 0; i < tasks.length; i++){
+    for (let i = 0; i < filteredTasks.length; i++){
       
       tempData.push(a1*Math.pow(1.6,i));
     }
@@ -68,7 +68,7 @@ const PieChart: React.FC = () => {
     setTaskLabel([]);
     setChartData([]);
   }
-  }, [tasks,date]);
+  }, [tasks, date]);
 
 
    const data={
@@ -88,12 +88,12 @@ const PieChart: React.FC = () => {
   const options = {
     plugins: {
       legend: {
-        display: false
+        display: false,
       },
       tooltip: {
         callbacks: {
           label: function(context: TooltipItem<"pie">) {
-            return tasks[context.dataIndex].description;
+            return filteredTasks[context.dataIndex].description;
           },
         //   afterLabel: function(tooltipItem: TooltipItem<"pie">) {
         //     return `描述: ${tasks[tooltipItem.dataIndex].description}`;
@@ -101,7 +101,7 @@ const PieChart: React.FC = () => {
         }
       },    
       datalabels: {
-        display: false
+        display: false,
       },
       radius:'50%'
     }

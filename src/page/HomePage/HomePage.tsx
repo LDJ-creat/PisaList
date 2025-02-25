@@ -122,27 +122,7 @@ const HomePage=()=>{
         window.location.reload();
       }
 
-    // useEffect(() => {
-    //     const loadInitialData = async () => {
-    //         const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    //         if (!dataLoaded && token) {
-    //             try {
-    //                 const [tasksRes] = await Promise.all([
-    //                     axios.get('/tasks/today'),
-    //                     // 可以添加其他并行请求
-    //                 ]);
-                    
-    //                 dispatch(initialTasks(tasksRes.data));
-    //                 setDataLoaded(true);
-    //             } catch (error) {
-    //                 console.error('Error loading initial data:', error);
-    //                 message.error('加载数据失败，请刷新重试');
-    //             }
-    //         }
-    //     };
 
-    //     loadInitialData();
-    // }, [dataLoaded, dispatch]);
 
     if (loading) {
         return (
