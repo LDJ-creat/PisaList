@@ -62,7 +62,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           source: "dist/*"
           target: "/www/wwwroot/dist"
           strip_components: 1
